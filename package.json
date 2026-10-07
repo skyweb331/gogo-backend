@@ -27,7 +27,7 @@
   "dependencies": {
     "@apollo/server": "5.5.1",
     "@as-integrations/express5": "1.1.2",
-    "@aws-sdk/client-sesv2": "3.1146.0",
+    "@aws-sdk/client-sesv2": "3.1147.0",
     "@prisma/orm-postgres": "8.0.0-rc.14",
     "@sentry/node": "11.4.0",
     "bcryptjs": "3.0.3",
@@ -36,7 +36,7 @@
     "cors": "2.8.6",
     "dataloader": "2.2.3",
     "dayjs": "1.11.23",
-    "dotenv": "18.0.5",
+    "dotenv": "18.0.6",
     "dotenv-expand": "13.0.0",
     "express": "5.2.1",
     "express-rate-limit": "8.7.1",
