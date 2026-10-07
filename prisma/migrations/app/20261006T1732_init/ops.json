@@ -1,0 +1,3115 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.app_settings",
+    "label": "Create table \"app_settings\"",
+    "summary": "Creates table \"app_settings\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "app_settings"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"app_settings\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"app_settings\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"app_settings\"",
+        "sql": "CREATE TABLE \"public\".\"app_settings\" (\n  \"key\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"value\" jsonb NOT NULL,\n  PRIMARY KEY (\"key\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"app_settings\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"app_settings\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.audit_logs",
+    "label": "Create table \"audit_logs\"",
+    "summary": "Creates table \"audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"audit_logs\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"audit_logs\"",
+        "sql": "CREATE TABLE \"public\".\"audit_logs\" (\n  \"action\" text NOT NULL,\n  \"actorId\" int4,\n  \"actorRole\" text,\n  \"after\" jsonb,\n  \"before\" jsonb,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"entity\" text NOT NULL,\n  \"entityId\" text,\n  \"id\" SERIAL NOT NULL,\n  \"ip\" text,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"audit_logs\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.custodial_wallets",
+    "label": "Create table \"custodial_wallets\"",
+    "summary": "Creates table \"custodial_wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "custodial_wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"custodial_wallets\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"custodial_wallets\"",
+        "sql": "CREATE TABLE \"public\".\"custodial_wallets\" (\n  \"address\" text NOT NULL,\n  \"bridgeWalletId\" text NOT NULL,\n  \"chain\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"custodial_wallets_chain_check_ed6bea37\" CHECK (\"chain\" IN ('base', 'solana'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"custodial_wallets\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.customers",
+    "label": "Create table \"customers\"",
+    "summary": "Creates table \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"customers\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"customers\"",
+        "sql": "CREATE TABLE \"public\".\"customers\" (\n  \"bridgeCustomerId\" text,\n  \"country\" text,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"endorsements\" jsonb,\n  \"id\" SERIAL NOT NULL,\n  \"kycLink\" text,\n  \"kycLinkId\" text,\n  \"kycStatus\" text DEFAULT 'not_started' NOT NULL,\n  \"onboardedAt\" timestamptz(3),\n  \"payoutWalletId\" int4,\n  \"region\" text,\n  \"rejectionReasons\" jsonb,\n  \"status\" text DEFAULT 'Onboarding' NOT NULL,\n  \"suspendedAt\" timestamptz(3),\n  \"tosLink\" text,\n  \"tosStatus\" text DEFAULT 'pending' NOT NULL,\n  \"type\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"customers_status_check_8bb956f2\" CHECK (\"status\" IN ('Onboarding', 'Active', 'Suspended')),\n  CONSTRAINT \"customers_type_check_c5ba0656\" CHECK (\"type\" IN ('individual', 'business'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"customers\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.fee_schedules",
+    "label": "Create table \"fee_schedules\"",
+    "summary": "Creates table \"fee_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "fee_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"fee_schedules\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"fee_schedules\"",
+        "sql": "CREATE TABLE \"public\".\"fee_schedules\" (\n  \"cancelledAt\" timestamptz(3),\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"createdById\" int4,\n  \"effectivePeriod\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"notes\" text,\n  \"notifyCustomers\" bool DEFAULT false NOT NULL,\n  \"publishedAt\" timestamptz(3),\n  \"publishedById\" int4,\n  \"status\" text DEFAULT 'Draft' NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"fee_schedules_status_check_b068110f\" CHECK (\"status\" IN ('Draft', 'Scheduled', 'Active', 'Superseded', 'Cancelled'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"fee_schedules\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.fee_tiers",
+    "label": "Create table \"fee_tiers\"",
+    "summary": "Creates table \"fee_tiers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "fee_tiers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"fee_tiers\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_tiers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"fee_tiers\"",
+        "sql": "CREATE TABLE \"public\".\"fee_tiers\" (\n  \"feeScheduleId\" int4 NOT NULL,\n  \"fromInCents\" int8 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"position\" int4 NOT NULL,\n  \"rateBps\" int4 NOT NULL,\n  \"toInCents\" int8,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"fee_tiers\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_tiers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.key_vault_canaries",
+    "label": "Create table \"key_vault_canaries\"",
+    "summary": "Creates table \"key_vault_canaries\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "key_vault_canaries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"key_vault_canaries\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"key_vault_canaries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"key_vault_canaries\"",
+        "sql": "CREATE TABLE \"public\".\"key_vault_canaries\" (\n  \"authTag\" bytea NOT NULL,\n  \"ciphertext\" bytea NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"dataKeyAuthTag\" bytea NOT NULL,\n  \"dataKeyIv\" bytea NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"iv\" bytea NOT NULL,\n  \"masterKeyVersion\" text NOT NULL,\n  \"wrappedDataKey\" bytea NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"key_vault_canaries\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"key_vault_canaries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.monthly_volumes",
+    "label": "Create table \"monthly_volumes\"",
+    "summary": "Creates table \"monthly_volumes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "monthly_volumes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"monthly_volumes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"monthly_volumes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"monthly_volumes\"",
+        "sql": "CREATE TABLE \"public\".\"monthly_volumes\" (\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"feeInCents\" int8 DEFAULT '0'::int8 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"periodKey\" text NOT NULL,\n  \"txCount\" int4 DEFAULT 0 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"version\" int4 DEFAULT 0 NOT NULL,\n  \"volumeInCents\" int8 DEFAULT '0'::int8 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"monthly_volumes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"monthly_volumes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.one_time_codes",
+    "label": "Create table \"one_time_codes\"",
+    "summary": "Creates table \"one_time_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "one_time_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"one_time_codes\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"one_time_codes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"one_time_codes\"",
+        "sql": "CREATE TABLE \"public\".\"one_time_codes\" (\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"codeHash\" text NOT NULL,\n  \"consumedAt\" timestamptz(3),\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"expiresAt\" timestamptz(3) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"meta\" jsonb,\n  \"purpose\" text NOT NULL,\n  \"userId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"one_time_codes_purpose_check_4e1d9a7a\" CHECK (\"purpose\" IN ('EmailVerify', 'PasswordReset', 'WalletKeyExport', 'WalletChange'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"one_time_codes\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"one_time_codes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.support_messages",
+    "label": "Create table \"support_messages\"",
+    "summary": "Creates table \"support_messages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "support_messages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"support_messages\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_messages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"support_messages\"",
+        "sql": "CREATE TABLE \"public\".\"support_messages\" (\n  \"authorId\" int4 NOT NULL,\n  \"body\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isStaff\" bool DEFAULT false NOT NULL,\n  \"ticketId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"support_messages\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_messages\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.support_tickets",
+    "label": "Create table \"support_tickets\"",
+    "summary": "Creates table \"support_tickets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "support_tickets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"support_tickets\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"support_tickets\"",
+        "sql": "CREATE TABLE \"public\".\"support_tickets\" (\n  \"assigneeId\" int4,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"lastMessageAt\" timestamptz(3),\n  \"status\" text DEFAULT 'Open' NOT NULL,\n  \"subject\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"support_tickets_status_check_f88e88ac\" CHECK (\"status\" IN ('Open', 'Pending', 'Resolved', 'Closed'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"support_tickets\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.transaction_events",
+    "label": "Create table \"transaction_events\"",
+    "summary": "Creates table \"transaction_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "transaction_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"transaction_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transaction_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"transaction_events\"",
+        "sql": "CREATE TABLE \"public\".\"transaction_events\" (\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"payload\" jsonb,\n  \"source\" text NOT NULL,\n  \"transactionId\" int4 NOT NULL,\n  \"type\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"transaction_events_source_check_4cd88e2e\" CHECK (\"source\" IN ('bridge_va', 'bridge_transfer', 'system', 'admin'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"transaction_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transaction_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.transactions",
+    "label": "Create table \"transactions\"",
+    "summary": "Creates table \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"transactions\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"transactions\"",
+        "sql": "CREATE TABLE \"public\".\"transactions\" (\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"bridgeDepositId\" text NOT NULL,\n  \"bridgeTransferId\" text,\n  \"completedAt\" timestamptz(3),\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"creditedAmountInCents\" int8,\n  \"creditedAt\" timestamptz(3),\n  \"currency\" text NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"destinationWalletSnapshot\" jsonb,\n  \"exchangeFeeInCents\" int8,\n  \"failureReason\" text,\n  \"feeBreakdown\" jsonb,\n  \"feeInCents\" int8,\n  \"feeScheduleId\" int4,\n  \"fundsReceivedAt\" timestamptz(3),\n  \"fxRate\" text,\n  \"grossAmountInCents\" int8 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"netAmountInCents\" int8,\n  \"nextRetryAt\" timestamptz(3),\n  \"periodKey\" text,\n  \"rail\" text,\n  \"sourceDetails\" jsonb,\n  \"state\" text DEFAULT 'Received' NOT NULL,\n  \"txHash\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"usdEquivalentInCents\" int8,\n  \"version\" int4 DEFAULT 0 NOT NULL,\n  \"virtualAccountId\" int4,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"transactions_currency_check_29bea278\" CHECK (\"currency\" IN ('usd', 'eur')),\n  CONSTRAINT \"transactions_state_check_70e62d22\" CHECK (\"state\" IN ('Received', 'Converting', 'Credited', 'PayoutPending', 'PayoutSubmitted', 'Completed', 'InReview', 'Refunded', 'PayoutFailed'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"transactions\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.users",
+    "label": "Create table \"users\"",
+    "summary": "Creates table \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"users\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"users\"",
+        "sql": "CREATE TABLE \"public\".\"users\" (\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"deletedAt\" timestamptz(3),\n  \"email\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isEmailVerified\" bool DEFAULT false NOT NULL,\n  \"lastLoginAt\" timestamptz(3),\n  \"name\" text NOT NULL,\n  \"password\" text NOT NULL,\n  \"role\" text DEFAULT 'Customer' NOT NULL,\n  \"totpEnabled\" bool DEFAULT false NOT NULL,\n  \"totpSecret\" text,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"users_role_check_2e8c077e\" CHECK (\"role\" IN ('Customer', 'Support', 'Admin'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"users\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.virtual_accounts",
+    "label": "Create table \"virtual_accounts\"",
+    "summary": "Creates table \"virtual_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "virtual_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"virtual_accounts\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"virtual_accounts\"",
+        "sql": "CREATE TABLE \"public\".\"virtual_accounts\" (\n  \"bridgeVirtualAccountId\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"custodialWalletId\" int4 NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"deactivatedAt\" timestamptz(3),\n  \"depositInstructions\" jsonb NOT NULL,\n  \"destinationChain\" text NOT NULL,\n  \"destinationCurrency\" text NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"sourceCurrency\" text NOT NULL,\n  \"status\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"virtual_accounts_destinationChain_check_5d330b1a\" CHECK (\"destinationChain\" IN ('base', 'solana')),\n  CONSTRAINT \"virtual_accounts_sourceCurrency_check_059d2431\" CHECK (\"sourceCurrency\" IN ('usd', 'eur'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"virtual_accounts\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.wallet_keys",
+    "label": "Create table \"wallet_keys\"",
+    "summary": "Creates table \"wallet_keys\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "wallet_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"wallet_keys\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallet_keys\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"wallet_keys\"",
+        "sql": "CREATE TABLE \"public\".\"wallet_keys\" (\n  \"algorithm\" text DEFAULT 'aes-256-gcm' NOT NULL,\n  \"authTag\" bytea NOT NULL,\n  \"ciphertext\" bytea NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"dataKeyAuthTag\" bytea NOT NULL,\n  \"dataKeyIv\" bytea NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"iv\" bytea NOT NULL,\n  \"keyFormat\" text NOT NULL,\n  \"masterKeyVersion\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"walletId\" int4 NOT NULL,\n  \"wrappedDataKey\" bytea NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"wallet_keys\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallet_keys\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.wallets",
+    "label": "Create table \"wallets\"",
+    "summary": "Creates table \"wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"wallets\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"wallets\"",
+        "sql": "CREATE TABLE \"public\".\"wallets\" (\n  \"address\" text NOT NULL,\n  \"chain\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"customerId\" int4 NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"keyExportedAt\" timestamptz(3),\n  \"keyRemovedAt\" timestamptz(3),\n  \"label\" text,\n  \"status\" text DEFAULT 'Active' NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"wallets_chain_check_ed6bea37\" CHECK (\"chain\" IN ('base', 'solana')),\n  CONSTRAINT \"wallets_status_check_b8b0c336\" CHECK (\"status\" IN ('Active', 'Archived')),\n  CONSTRAINT \"wallets_type_check_e1df0d92\" CHECK (\"type\" IN ('Generated', 'External'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"wallets\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.webhook_events",
+    "label": "Create table \"webhook_events\"",
+    "summary": "Creates table \"webhook_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "webhook_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"webhook_events\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"webhook_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"webhook_events\"",
+        "sql": "CREATE TABLE \"public\".\"webhook_events\" (\n  \"attempts\" int4 DEFAULT 0 NOT NULL,\n  \"bridgeEventId\" text NOT NULL,\n  \"category\" text NOT NULL,\n  \"createdAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"error\" text,\n  \"id\" SERIAL NOT NULL,\n  \"objectId\" text,\n  \"payload\" jsonb NOT NULL,\n  \"processedAt\" timestamptz(3),\n  \"receivedAt\" timestamptz(3) DEFAULT (now()) NOT NULL,\n  \"status\" text DEFAULT 'Pending' NOT NULL,\n  \"type\" text NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"webhook_events_status_check_9ebe27a1\" CHECK (\"status\" IN ('Pending', 'Processed', 'Failed', 'Ignored'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"webhook_events\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"webhook_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.custodial_wallets.custodial_wallets_bridgeWalletId_key",
+    "label": "Add unique constraint on \"custodial_wallets\" (bridgeWalletId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "custodial_wallets_bridgeWalletId_key",
+        "table": "custodial_wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"custodial_wallets_bridgeWalletId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "custodial_wallets_bridgeWalletId_key",
+          "public",
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"custodial_wallets_bridgeWalletId_key\"",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ADD CONSTRAINT \"custodial_wallets_bridgeWalletId_key\" UNIQUE (\"bridgeWalletId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"custodial_wallets_bridgeWalletId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "custodial_wallets_bridgeWalletId_key",
+          "public",
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.custodial_wallets.custodial_wallets_customerId_chain_key",
+    "label": "Add unique constraint on \"custodial_wallets\" (customerId, chain)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "custodial_wallets_customerId_chain_key",
+        "table": "custodial_wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"custodial_wallets_customerId_chain_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "custodial_wallets_customerId_chain_key",
+          "public",
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"custodial_wallets_customerId_chain_key\"",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ADD CONSTRAINT \"custodial_wallets_customerId_chain_key\" UNIQUE (\"customerId\", \"chain\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"custodial_wallets_customerId_chain_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "custodial_wallets_customerId_chain_key",
+          "public",
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.customers.customers_userId_key",
+    "label": "Add unique constraint on \"customers\" (userId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "customers_userId_key",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"customers_userId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_userId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"customers_userId_key\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD CONSTRAINT \"customers_userId_key\" UNIQUE (\"userId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"customers_userId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_userId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.customers.customers_bridgeCustomerId_key",
+    "label": "Add unique constraint on \"customers\" (bridgeCustomerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "customers_bridgeCustomerId_key",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"customers_bridgeCustomerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_bridgeCustomerId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"customers_bridgeCustomerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD CONSTRAINT \"customers_bridgeCustomerId_key\" UNIQUE (\"bridgeCustomerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"customers_bridgeCustomerId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_bridgeCustomerId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.customers.customers_kycLinkId_key",
+    "label": "Add unique constraint on \"customers\" (kycLinkId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "customers_kycLinkId_key",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"customers_kycLinkId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_kycLinkId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"customers_kycLinkId_key\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD CONSTRAINT \"customers_kycLinkId_key\" UNIQUE (\"kycLinkId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"customers_kycLinkId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_kycLinkId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.fee_tiers.fee_tiers_feeScheduleId_position_key",
+    "label": "Add unique constraint on \"fee_tiers\" (feeScheduleId, position)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "fee_tiers_feeScheduleId_position_key",
+        "table": "fee_tiers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"fee_tiers_feeScheduleId_position_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "fee_tiers_feeScheduleId_position_key",
+          "public",
+          "\"public\".\"fee_tiers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"fee_tiers_feeScheduleId_position_key\"",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" ADD CONSTRAINT \"fee_tiers_feeScheduleId_position_key\" UNIQUE (\"feeScheduleId\", \"position\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"fee_tiers_feeScheduleId_position_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "fee_tiers_feeScheduleId_position_key",
+          "public",
+          "\"public\".\"fee_tiers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.key_vault_canaries.key_vault_canaries_masterKeyVersion_key",
+    "label": "Add unique constraint on \"key_vault_canaries\" (masterKeyVersion)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "key_vault_canaries_masterKeyVersion_key",
+        "table": "key_vault_canaries"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"key_vault_canaries_masterKeyVersion_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "key_vault_canaries_masterKeyVersion_key",
+          "public",
+          "\"public\".\"key_vault_canaries\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"key_vault_canaries_masterKeyVersion_key\"",
+        "sql": "ALTER TABLE \"public\".\"key_vault_canaries\" ADD CONSTRAINT \"key_vault_canaries_masterKeyVersion_key\" UNIQUE (\"masterKeyVersion\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"key_vault_canaries_masterKeyVersion_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "key_vault_canaries_masterKeyVersion_key",
+          "public",
+          "\"public\".\"key_vault_canaries\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.monthly_volumes.monthly_volumes_customerId_periodKey_key",
+    "label": "Add unique constraint on \"monthly_volumes\" (customerId, periodKey)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "monthly_volumes_customerId_periodKey_key",
+        "table": "monthly_volumes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"monthly_volumes_customerId_periodKey_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "monthly_volumes_customerId_periodKey_key",
+          "public",
+          "\"public\".\"monthly_volumes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"monthly_volumes_customerId_periodKey_key\"",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" ADD CONSTRAINT \"monthly_volumes_customerId_periodKey_key\" UNIQUE (\"customerId\", \"periodKey\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"monthly_volumes_customerId_periodKey_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "monthly_volumes_customerId_periodKey_key",
+          "public",
+          "\"public\".\"monthly_volumes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.transactions.transactions_bridgeDepositId_key",
+    "label": "Add unique constraint on \"transactions\" (bridgeDepositId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "transactions_bridgeDepositId_key",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"transactions_bridgeDepositId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_bridgeDepositId_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"transactions_bridgeDepositId_key\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD CONSTRAINT \"transactions_bridgeDepositId_key\" UNIQUE (\"bridgeDepositId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"transactions_bridgeDepositId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_bridgeDepositId_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.transactions.transactions_bridgeTransferId_key",
+    "label": "Add unique constraint on \"transactions\" (bridgeTransferId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "transactions_bridgeTransferId_key",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"transactions_bridgeTransferId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_bridgeTransferId_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"transactions_bridgeTransferId_key\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD CONSTRAINT \"transactions_bridgeTransferId_key\" UNIQUE (\"bridgeTransferId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"transactions_bridgeTransferId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_bridgeTransferId_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.users.users_email_key",
+    "label": "Add unique constraint on \"users\" (email)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "users_email_key",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"users_email_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_email_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"users_email_key\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD CONSTRAINT \"users_email_key\" UNIQUE (\"email\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"users_email_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_email_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.virtual_accounts.virtual_accounts_bridgeVirtualAccountId_key",
+    "label": "Add unique constraint on \"virtual_accounts\" (bridgeVirtualAccountId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "virtual_accounts_bridgeVirtualAccountId_key",
+        "table": "virtual_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"virtual_accounts_bridgeVirtualAccountId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "virtual_accounts_bridgeVirtualAccountId_key",
+          "public",
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"virtual_accounts_bridgeVirtualAccountId_key\"",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ADD CONSTRAINT \"virtual_accounts_bridgeVirtualAccountId_key\" UNIQUE (\"bridgeVirtualAccountId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"virtual_accounts_bridgeVirtualAccountId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "virtual_accounts_bridgeVirtualAccountId_key",
+          "public",
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.wallet_keys.wallet_keys_walletId_key",
+    "label": "Add unique constraint on \"wallet_keys\" (walletId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "wallet_keys_walletId_key",
+        "table": "wallet_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"wallet_keys_walletId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallet_keys_walletId_key",
+          "public",
+          "\"public\".\"wallet_keys\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"wallet_keys_walletId_key\"",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" ADD CONSTRAINT \"wallet_keys_walletId_key\" UNIQUE (\"walletId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"wallet_keys_walletId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallet_keys_walletId_key",
+          "public",
+          "\"public\".\"wallet_keys\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.wallets.wallets_customerId_chain_address_key",
+    "label": "Add unique constraint on \"wallets\" (customerId, chain, address)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "wallets_customerId_chain_address_key",
+        "table": "wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"wallets_customerId_chain_address_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallets_customerId_chain_address_key",
+          "public",
+          "\"public\".\"wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"wallets_customerId_chain_address_key\"",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ADD CONSTRAINT \"wallets_customerId_chain_address_key\" UNIQUE (\"customerId\", \"chain\", \"address\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"wallets_customerId_chain_address_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallets_customerId_chain_address_key",
+          "public",
+          "\"public\".\"wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.webhook_events.webhook_events_bridgeEventId_key",
+    "label": "Add unique constraint on \"webhook_events\" (bridgeEventId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "webhook_events_bridgeEventId_key",
+        "table": "webhook_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"webhook_events_bridgeEventId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "webhook_events_bridgeEventId_key",
+          "public",
+          "\"public\".\"webhook_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"webhook_events_bridgeEventId_key\"",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ADD CONSTRAINT \"webhook_events_bridgeEventId_key\" UNIQUE (\"bridgeEventId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"webhook_events_bridgeEventId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "webhook_events_bridgeEventId_key",
+          "public",
+          "\"public\".\"webhook_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.audit_logs.audit_logs_actorId_idx_a58f6b4b",
+    "label": "Create index \"audit_logs_actorId_idx_a58f6b4b\" on \"audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "audit_logs_actorId_idx_a58f6b4b",
+        "table": "audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"audit_logs_actorId_idx_a58f6b4b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs_actorId_idx_a58f6b4b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"audit_logs_actorId_idx_a58f6b4b\"",
+        "sql": "CREATE INDEX \"audit_logs_actorId_idx_a58f6b4b\" ON \"public\".\"audit_logs\" (\"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"audit_logs_actorId_idx_a58f6b4b\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs_actorId_idx_a58f6b4b\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.audit_logs.audit_logs_createdAt_idx_9575dbd7",
+    "label": "Create index \"audit_logs_createdAt_idx_9575dbd7\" on \"audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "audit_logs_createdAt_idx_9575dbd7",
+        "table": "audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"audit_logs_createdAt_idx_9575dbd7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"audit_logs_createdAt_idx_9575dbd7\"",
+        "sql": "CREATE INDEX \"audit_logs_createdAt_idx_9575dbd7\" ON \"public\".\"audit_logs\" (\"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"audit_logs_createdAt_idx_9575dbd7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs_createdAt_idx_9575dbd7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.audit_logs.audit_logs_entity_entityId_idx_efadd7fc",
+    "label": "Create index \"audit_logs_entity_entityId_idx_efadd7fc\" on \"audit_logs\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "audit_logs_entity_entityId_idx_efadd7fc",
+        "table": "audit_logs"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"audit_logs_entity_entityId_idx_efadd7fc\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs_entity_entityId_idx_efadd7fc\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"audit_logs_entity_entityId_idx_efadd7fc\"",
+        "sql": "CREATE INDEX \"audit_logs_entity_entityId_idx_efadd7fc\" ON \"public\".\"audit_logs\" (\"entity\", \"entityId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"audit_logs_entity_entityId_idx_efadd7fc\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"audit_logs_entity_entityId_idx_efadd7fc\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.custodial_wallets.custodial_wallets_customerId_idx_b2a8a46c",
+    "label": "Create index \"custodial_wallets_customerId_idx_b2a8a46c\" on \"custodial_wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "custodial_wallets_customerId_idx_b2a8a46c",
+        "table": "custodial_wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"custodial_wallets_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"custodial_wallets_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"custodial_wallets_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"custodial_wallets_customerId_idx_b2a8a46c\" ON \"public\".\"custodial_wallets\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"custodial_wallets_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"custodial_wallets_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.customers.customers_status_idx_e98638ab",
+    "label": "Create index \"customers_status_idx_e98638ab\" on \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "customers_status_idx_e98638ab",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"customers_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"customers_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"customers_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"customers_status_idx_e98638ab\" ON \"public\".\"customers\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"customers_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"customers_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.fee_schedules.fee_schedules_one_per_period_e121a2e1",
+    "label": "Create index \"fee_schedules_one_per_period_e121a2e1\" on \"fee_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "fee_schedules_one_per_period_e121a2e1",
+        "table": "fee_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"fee_schedules_one_per_period_e121a2e1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_schedules_one_per_period_e121a2e1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"fee_schedules_one_per_period_e121a2e1\"",
+        "sql": "CREATE UNIQUE INDEX \"fee_schedules_one_per_period_e121a2e1\" ON \"public\".\"fee_schedules\" (\"effectivePeriod\") WHERE ((\"status\" IN ('Scheduled', 'Active', 'Superseded')))",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"fee_schedules_one_per_period_e121a2e1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_schedules_one_per_period_e121a2e1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.fee_schedules.fee_schedules_status_idx_e98638ab",
+    "label": "Create index \"fee_schedules_status_idx_e98638ab\" on \"fee_schedules\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "fee_schedules_status_idx_e98638ab",
+        "table": "fee_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"fee_schedules_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_schedules_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"fee_schedules_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"fee_schedules_status_idx_e98638ab\" ON \"public\".\"fee_schedules\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"fee_schedules_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_schedules_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.fee_tiers.fee_tiers_feeScheduleId_idx_10a9ddd4",
+    "label": "Create index \"fee_tiers_feeScheduleId_idx_10a9ddd4\" on \"fee_tiers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "fee_tiers_feeScheduleId_idx_10a9ddd4",
+        "table": "fee_tiers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"fee_tiers_feeScheduleId_idx_10a9ddd4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_tiers_feeScheduleId_idx_10a9ddd4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"fee_tiers_feeScheduleId_idx_10a9ddd4\"",
+        "sql": "CREATE INDEX \"fee_tiers_feeScheduleId_idx_10a9ddd4\" ON \"public\".\"fee_tiers\" (\"feeScheduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"fee_tiers_feeScheduleId_idx_10a9ddd4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"fee_tiers_feeScheduleId_idx_10a9ddd4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.monthly_volumes.monthly_volumes_customerId_idx_b2a8a46c",
+    "label": "Create index \"monthly_volumes_customerId_idx_b2a8a46c\" on \"monthly_volumes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "monthly_volumes_customerId_idx_b2a8a46c",
+        "table": "monthly_volumes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"monthly_volumes_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"monthly_volumes_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"monthly_volumes_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"monthly_volumes_customerId_idx_b2a8a46c\" ON \"public\".\"monthly_volumes\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"monthly_volumes_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"monthly_volumes_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.one_time_codes.one_time_codes_userId_idx_a489d58a",
+    "label": "Create index \"one_time_codes_userId_idx_a489d58a\" on \"one_time_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "one_time_codes_userId_idx_a489d58a",
+        "table": "one_time_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"one_time_codes_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"one_time_codes_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"one_time_codes_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"one_time_codes_userId_idx_a489d58a\" ON \"public\".\"one_time_codes\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"one_time_codes_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"one_time_codes_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.one_time_codes.one_time_codes_userId_purpose_idx_e49c32f0",
+    "label": "Create index \"one_time_codes_userId_purpose_idx_e49c32f0\" on \"one_time_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "one_time_codes_userId_purpose_idx_e49c32f0",
+        "table": "one_time_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"one_time_codes_userId_purpose_idx_e49c32f0\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"one_time_codes_userId_purpose_idx_e49c32f0\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"one_time_codes_userId_purpose_idx_e49c32f0\"",
+        "sql": "CREATE INDEX \"one_time_codes_userId_purpose_idx_e49c32f0\" ON \"public\".\"one_time_codes\" (\"userId\", \"purpose\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"one_time_codes_userId_purpose_idx_e49c32f0\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"one_time_codes_userId_purpose_idx_e49c32f0\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.support_messages.support_messages_authorId_idx_e47547ed",
+    "label": "Create index \"support_messages_authorId_idx_e47547ed\" on \"support_messages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "support_messages_authorId_idx_e47547ed",
+        "table": "support_messages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"support_messages_authorId_idx_e47547ed\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_messages_authorId_idx_e47547ed\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"support_messages_authorId_idx_e47547ed\"",
+        "sql": "CREATE INDEX \"support_messages_authorId_idx_e47547ed\" ON \"public\".\"support_messages\" (\"authorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"support_messages_authorId_idx_e47547ed\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_messages_authorId_idx_e47547ed\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.support_messages.support_messages_ticketId_idx_2fe526c3",
+    "label": "Create index \"support_messages_ticketId_idx_2fe526c3\" on \"support_messages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "support_messages_ticketId_idx_2fe526c3",
+        "table": "support_messages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"support_messages_ticketId_idx_2fe526c3\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_messages_ticketId_idx_2fe526c3\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"support_messages_ticketId_idx_2fe526c3\"",
+        "sql": "CREATE INDEX \"support_messages_ticketId_idx_2fe526c3\" ON \"public\".\"support_messages\" (\"ticketId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"support_messages_ticketId_idx_2fe526c3\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_messages_ticketId_idx_2fe526c3\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.support_tickets.support_tickets_customerId_idx_b2a8a46c",
+    "label": "Create index \"support_tickets_customerId_idx_b2a8a46c\" on \"support_tickets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "support_tickets_customerId_idx_b2a8a46c",
+        "table": "support_tickets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"support_tickets_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_tickets_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"support_tickets_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"support_tickets_customerId_idx_b2a8a46c\" ON \"public\".\"support_tickets\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"support_tickets_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_tickets_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.support_tickets.support_tickets_status_idx_e98638ab",
+    "label": "Create index \"support_tickets_status_idx_e98638ab\" on \"support_tickets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "support_tickets_status_idx_e98638ab",
+        "table": "support_tickets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"support_tickets_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_tickets_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"support_tickets_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"support_tickets_status_idx_e98638ab\" ON \"public\".\"support_tickets\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"support_tickets_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"support_tickets_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.transaction_events.transaction_events_transactionId_idx_d3180832",
+    "label": "Create index \"transaction_events_transactionId_idx_d3180832\" on \"transaction_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "transaction_events_transactionId_idx_d3180832",
+        "table": "transaction_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"transaction_events_transactionId_idx_d3180832\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transaction_events_transactionId_idx_d3180832\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"transaction_events_transactionId_idx_d3180832\"",
+        "sql": "CREATE INDEX \"transaction_events_transactionId_idx_d3180832\" ON \"public\".\"transaction_events\" (\"transactionId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"transaction_events_transactionId_idx_d3180832\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transaction_events_transactionId_idx_d3180832\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.transactions.transactions_customerId_createdAt_idx_f10a1fb1",
+    "label": "Create index \"transactions_customerId_createdAt_idx_f10a1fb1\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "transactions_customerId_createdAt_idx_f10a1fb1",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"transactions_customerId_createdAt_idx_f10a1fb1\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_customerId_createdAt_idx_f10a1fb1\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"transactions_customerId_createdAt_idx_f10a1fb1\"",
+        "sql": "CREATE INDEX \"transactions_customerId_createdAt_idx_f10a1fb1\" ON \"public\".\"transactions\" (\"customerId\", \"createdAt\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"transactions_customerId_createdAt_idx_f10a1fb1\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_customerId_createdAt_idx_f10a1fb1\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.transactions.transactions_customerId_idx_b2a8a46c",
+    "label": "Create index \"transactions_customerId_idx_b2a8a46c\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "transactions_customerId_idx_b2a8a46c",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"transactions_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"transactions_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"transactions_customerId_idx_b2a8a46c\" ON \"public\".\"transactions\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"transactions_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.transactions.transactions_feeScheduleId_idx_10a9ddd4",
+    "label": "Create index \"transactions_feeScheduleId_idx_10a9ddd4\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "transactions_feeScheduleId_idx_10a9ddd4",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"transactions_feeScheduleId_idx_10a9ddd4\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_feeScheduleId_idx_10a9ddd4\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"transactions_feeScheduleId_idx_10a9ddd4\"",
+        "sql": "CREATE INDEX \"transactions_feeScheduleId_idx_10a9ddd4\" ON \"public\".\"transactions\" (\"feeScheduleId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"transactions_feeScheduleId_idx_10a9ddd4\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_feeScheduleId_idx_10a9ddd4\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.transactions.transactions_state_idx_ea3378ea",
+    "label": "Create index \"transactions_state_idx_ea3378ea\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "transactions_state_idx_ea3378ea",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"transactions_state_idx_ea3378ea\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_state_idx_ea3378ea\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"transactions_state_idx_ea3378ea\"",
+        "sql": "CREATE INDEX \"transactions_state_idx_ea3378ea\" ON \"public\".\"transactions\" (\"state\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"transactions_state_idx_ea3378ea\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_state_idx_ea3378ea\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.transactions.transactions_virtualAccountId_idx_e02ad156",
+    "label": "Create index \"transactions_virtualAccountId_idx_e02ad156\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "transactions_virtualAccountId_idx_e02ad156",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"transactions_virtualAccountId_idx_e02ad156\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_virtualAccountId_idx_e02ad156\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"transactions_virtualAccountId_idx_e02ad156\"",
+        "sql": "CREATE INDEX \"transactions_virtualAccountId_idx_e02ad156\" ON \"public\".\"transactions\" (\"virtualAccountId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"transactions_virtualAccountId_idx_e02ad156\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"transactions_virtualAccountId_idx_e02ad156\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.virtual_accounts.virtual_accounts_custodialWalletId_idx_8d63e48e",
+    "label": "Create index \"virtual_accounts_custodialWalletId_idx_8d63e48e\" on \"virtual_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "virtual_accounts_custodialWalletId_idx_8d63e48e",
+        "table": "virtual_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"virtual_accounts_custodialWalletId_idx_8d63e48e\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"virtual_accounts_custodialWalletId_idx_8d63e48e\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"virtual_accounts_custodialWalletId_idx_8d63e48e\"",
+        "sql": "CREATE INDEX \"virtual_accounts_custodialWalletId_idx_8d63e48e\" ON \"public\".\"virtual_accounts\" (\"custodialWalletId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"virtual_accounts_custodialWalletId_idx_8d63e48e\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"virtual_accounts_custodialWalletId_idx_8d63e48e\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.virtual_accounts.virtual_accounts_customerId_idx_b2a8a46c",
+    "label": "Create index \"virtual_accounts_customerId_idx_b2a8a46c\" on \"virtual_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "virtual_accounts_customerId_idx_b2a8a46c",
+        "table": "virtual_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"virtual_accounts_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"virtual_accounts_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"virtual_accounts_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"virtual_accounts_customerId_idx_b2a8a46c\" ON \"public\".\"virtual_accounts\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"virtual_accounts_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"virtual_accounts_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.wallet_keys.wallet_keys_masterKeyVersion_idx_333fdeaa",
+    "label": "Create index \"wallet_keys_masterKeyVersion_idx_333fdeaa\" on \"wallet_keys\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "wallet_keys_masterKeyVersion_idx_333fdeaa",
+        "table": "wallet_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"wallet_keys_masterKeyVersion_idx_333fdeaa\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallet_keys_masterKeyVersion_idx_333fdeaa\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"wallet_keys_masterKeyVersion_idx_333fdeaa\"",
+        "sql": "CREATE INDEX \"wallet_keys_masterKeyVersion_idx_333fdeaa\" ON \"public\".\"wallet_keys\" (\"masterKeyVersion\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"wallet_keys_masterKeyVersion_idx_333fdeaa\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallet_keys_masterKeyVersion_idx_333fdeaa\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.wallets.wallets_customerId_idx_b2a8a46c",
+    "label": "Create index \"wallets_customerId_idx_b2a8a46c\" on \"wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "wallets_customerId_idx_b2a8a46c",
+        "table": "wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"wallets_customerId_idx_b2a8a46c\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallets_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"wallets_customerId_idx_b2a8a46c\"",
+        "sql": "CREATE INDEX \"wallets_customerId_idx_b2a8a46c\" ON \"public\".\"wallets\" (\"customerId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"wallets_customerId_idx_b2a8a46c\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallets_customerId_idx_b2a8a46c\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.wallets.wallets_one_generated_per_chain_d8b84b7f",
+    "label": "Create index \"wallets_one_generated_per_chain_d8b84b7f\" on \"wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "wallets_one_generated_per_chain_d8b84b7f",
+        "table": "wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"wallets_one_generated_per_chain_d8b84b7f\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallets_one_generated_per_chain_d8b84b7f\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"wallets_one_generated_per_chain_d8b84b7f\"",
+        "sql": "CREATE UNIQUE INDEX \"wallets_one_generated_per_chain_d8b84b7f\" ON \"public\".\"wallets\" (\"customerId\", \"chain\") WHERE ((\"type\" = 'Generated'))",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"wallets_one_generated_per_chain_d8b84b7f\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"wallets_one_generated_per_chain_d8b84b7f\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.webhook_events.webhook_events_category_objectId_idx_8d0a5edf",
+    "label": "Create index \"webhook_events_category_objectId_idx_8d0a5edf\" on \"webhook_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "webhook_events_category_objectId_idx_8d0a5edf",
+        "table": "webhook_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"webhook_events_category_objectId_idx_8d0a5edf\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"webhook_events_category_objectId_idx_8d0a5edf\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"webhook_events_category_objectId_idx_8d0a5edf\"",
+        "sql": "CREATE INDEX \"webhook_events_category_objectId_idx_8d0a5edf\" ON \"public\".\"webhook_events\" (\"category\", \"objectId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"webhook_events_category_objectId_idx_8d0a5edf\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"webhook_events_category_objectId_idx_8d0a5edf\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.webhook_events.webhook_events_status_idx_e98638ab",
+    "label": "Create index \"webhook_events_status_idx_e98638ab\" on \"webhook_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "webhook_events_status_idx_e98638ab",
+        "table": "webhook_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"webhook_events_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"webhook_events_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"webhook_events_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"webhook_events_status_idx_e98638ab\" ON \"public\".\"webhook_events\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"webhook_events_status_idx_e98638ab\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"webhook_events_status_idx_e98638ab\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.custodial_wallets.custodial_wallets_customerId_fkey",
+    "label": "Add foreign key \"custodial_wallets_customerId_fkey\" on \"custodial_wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "custodial_wallets_customerId_fkey",
+        "table": "custodial_wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"custodial_wallets_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "custodial_wallets_customerId_fkey",
+          "public",
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"custodial_wallets_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\"\nADD CONSTRAINT \"custodial_wallets_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"custodial_wallets_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "custodial_wallets_customerId_fkey",
+          "public",
+          "\"public\".\"custodial_wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.customers.customers_userId_fkey",
+    "label": "Add foreign key \"customers_userId_fkey\" on \"customers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "customers_userId_fkey",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"customers_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_userId_fkey",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"customers_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"customers\"\nADD CONSTRAINT \"customers_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"customers_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_userId_fkey",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.fee_tiers.fee_tiers_feeScheduleId_fkey",
+    "label": "Add foreign key \"fee_tiers_feeScheduleId_fkey\" on \"fee_tiers\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "fee_tiers_feeScheduleId_fkey",
+        "table": "fee_tiers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"fee_tiers_feeScheduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "fee_tiers_feeScheduleId_fkey",
+          "public",
+          "\"public\".\"fee_tiers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"fee_tiers_feeScheduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\"\nADD CONSTRAINT \"fee_tiers_feeScheduleId_fkey\"\nFOREIGN KEY (\"feeScheduleId\")\nREFERENCES \"public\".\"fee_schedules\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"fee_tiers_feeScheduleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "fee_tiers_feeScheduleId_fkey",
+          "public",
+          "\"public\".\"fee_tiers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.monthly_volumes.monthly_volumes_customerId_fkey",
+    "label": "Add foreign key \"monthly_volumes_customerId_fkey\" on \"monthly_volumes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "monthly_volumes_customerId_fkey",
+        "table": "monthly_volumes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"monthly_volumes_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "monthly_volumes_customerId_fkey",
+          "public",
+          "\"public\".\"monthly_volumes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"monthly_volumes_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\"\nADD CONSTRAINT \"monthly_volumes_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"monthly_volumes_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "monthly_volumes_customerId_fkey",
+          "public",
+          "\"public\".\"monthly_volumes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.one_time_codes.one_time_codes_userId_fkey",
+    "label": "Add foreign key \"one_time_codes_userId_fkey\" on \"one_time_codes\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "one_time_codes_userId_fkey",
+        "table": "one_time_codes"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"one_time_codes_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "one_time_codes_userId_fkey",
+          "public",
+          "\"public\".\"one_time_codes\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"one_time_codes_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\"\nADD CONSTRAINT \"one_time_codes_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"one_time_codes_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "one_time_codes_userId_fkey",
+          "public",
+          "\"public\".\"one_time_codes\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.support_messages.support_messages_ticketId_fkey",
+    "label": "Add foreign key \"support_messages_ticketId_fkey\" on \"support_messages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "support_messages_ticketId_fkey",
+        "table": "support_messages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"support_messages_ticketId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_messages_ticketId_fkey",
+          "public",
+          "\"public\".\"support_messages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"support_messages_ticketId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"support_messages\"\nADD CONSTRAINT \"support_messages_ticketId_fkey\"\nFOREIGN KEY (\"ticketId\")\nREFERENCES \"public\".\"support_tickets\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"support_messages_ticketId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_messages_ticketId_fkey",
+          "public",
+          "\"public\".\"support_messages\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.support_messages.support_messages_authorId_fkey",
+    "label": "Add foreign key \"support_messages_authorId_fkey\" on \"support_messages\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "support_messages_authorId_fkey",
+        "table": "support_messages"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"support_messages_authorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_messages_authorId_fkey",
+          "public",
+          "\"public\".\"support_messages\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"support_messages_authorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"support_messages\"\nADD CONSTRAINT \"support_messages_authorId_fkey\"\nFOREIGN KEY (\"authorId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"support_messages_authorId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_messages_authorId_fkey",
+          "public",
+          "\"public\".\"support_messages\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.support_tickets.support_tickets_customerId_fkey",
+    "label": "Add foreign key \"support_tickets_customerId_fkey\" on \"support_tickets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "support_tickets_customerId_fkey",
+        "table": "support_tickets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"support_tickets_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_tickets_customerId_fkey",
+          "public",
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"support_tickets_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\"\nADD CONSTRAINT \"support_tickets_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"support_tickets_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_tickets_customerId_fkey",
+          "public",
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.transaction_events.transaction_events_transactionId_fkey",
+    "label": "Add foreign key \"transaction_events_transactionId_fkey\" on \"transaction_events\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "transaction_events_transactionId_fkey",
+        "table": "transaction_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"transaction_events_transactionId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transaction_events_transactionId_fkey",
+          "public",
+          "\"public\".\"transaction_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"transaction_events_transactionId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\"\nADD CONSTRAINT \"transaction_events_transactionId_fkey\"\nFOREIGN KEY (\"transactionId\")\nREFERENCES \"public\".\"transactions\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"transaction_events_transactionId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transaction_events_transactionId_fkey",
+          "public",
+          "\"public\".\"transaction_events\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.transactions.transactions_customerId_fkey",
+    "label": "Add foreign key \"transactions_customerId_fkey\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "transactions_customerId_fkey",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"transactions_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_customerId_fkey",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"transactions_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\"\nADD CONSTRAINT \"transactions_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"transactions_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_customerId_fkey",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.transactions.transactions_virtualAccountId_fkey",
+    "label": "Add foreign key \"transactions_virtualAccountId_fkey\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "transactions_virtualAccountId_fkey",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"transactions_virtualAccountId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_virtualAccountId_fkey",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"transactions_virtualAccountId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\"\nADD CONSTRAINT \"transactions_virtualAccountId_fkey\"\nFOREIGN KEY (\"virtualAccountId\")\nREFERENCES \"public\".\"virtual_accounts\" (\"id\")\nON DELETE SET NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"transactions_virtualAccountId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_virtualAccountId_fkey",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.transactions.transactions_feeScheduleId_fkey",
+    "label": "Add foreign key \"transactions_feeScheduleId_fkey\" on \"transactions\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "transactions_feeScheduleId_fkey",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"transactions_feeScheduleId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_feeScheduleId_fkey",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"transactions_feeScheduleId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\"\nADD CONSTRAINT \"transactions_feeScheduleId_fkey\"\nFOREIGN KEY (\"feeScheduleId\")\nREFERENCES \"public\".\"fee_schedules\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"transactions_feeScheduleId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_feeScheduleId_fkey",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.virtual_accounts.virtual_accounts_customerId_fkey",
+    "label": "Add foreign key \"virtual_accounts_customerId_fkey\" on \"virtual_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "virtual_accounts_customerId_fkey",
+        "table": "virtual_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"virtual_accounts_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "virtual_accounts_customerId_fkey",
+          "public",
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"virtual_accounts_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\"\nADD CONSTRAINT \"virtual_accounts_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"virtual_accounts_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "virtual_accounts_customerId_fkey",
+          "public",
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.virtual_accounts.virtual_accounts_custodialWalletId_fkey",
+    "label": "Add foreign key \"virtual_accounts_custodialWalletId_fkey\" on \"virtual_accounts\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "virtual_accounts_custodialWalletId_fkey",
+        "table": "virtual_accounts"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"virtual_accounts_custodialWalletId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "virtual_accounts_custodialWalletId_fkey",
+          "public",
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"virtual_accounts_custodialWalletId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\"\nADD CONSTRAINT \"virtual_accounts_custodialWalletId_fkey\"\nFOREIGN KEY (\"custodialWalletId\")\nREFERENCES \"public\".\"custodial_wallets\" (\"id\")\nON DELETE RESTRICT"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"virtual_accounts_custodialWalletId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "virtual_accounts_custodialWalletId_fkey",
+          "public",
+          "\"public\".\"virtual_accounts\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.wallet_keys.wallet_keys_walletId_fkey",
+    "label": "Add foreign key \"wallet_keys_walletId_fkey\" on \"wallet_keys\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "wallet_keys_walletId_fkey",
+        "table": "wallet_keys"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"wallet_keys_walletId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallet_keys_walletId_fkey",
+          "public",
+          "\"public\".\"wallet_keys\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"wallet_keys_walletId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\"\nADD CONSTRAINT \"wallet_keys_walletId_fkey\"\nFOREIGN KEY (\"walletId\")\nREFERENCES \"public\".\"wallets\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"wallet_keys_walletId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallet_keys_walletId_fkey",
+          "public",
+          "\"public\".\"wallet_keys\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.wallets.wallets_customerId_fkey",
+    "label": "Add foreign key \"wallets_customerId_fkey\" on \"wallets\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "wallets_customerId_fkey",
+        "table": "wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"wallets_customerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallets_customerId_fkey",
+          "public",
+          "\"public\".\"wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"wallets_customerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"wallets\"\nADD CONSTRAINT \"wallets_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"wallets_customerId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallets_customerId_fkey",
+          "public",
+          "\"public\".\"wallets\""
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p Your payout was sent.
+  +rows(rows)
+  if explorerUrl
+    p
+      a(href=explorerUrl) View on block explorer
+  +button(frontendUrl + '/transactions/' + transactionId, 'View transaction')

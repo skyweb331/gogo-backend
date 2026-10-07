@@ -1,0 +1,470 @@
+// use prisma-8
+
+types {
+  Timestamp = TimestamptzJsDate(3)
+}
+
+// ---------------------------------------------------------------------------
+// Enums (mirrored by TypeScript enums in src/graphql/enum.ts; checked on boot)
+// ---------------------------------------------------------------------------
+
+enum user_role {
+  @@type("pg/text@1")
+  Customer = "Customer"
+  Support  = "Support"
+  Admin    = "Admin"
+}
+
+enum customer_type {
+  @@type("pg/text@1")
+  individual = "individual"
+  business   = "business"
+}
+
+enum customer_status {
+  @@type("pg/text@1")
+  Onboarding = "Onboarding"
+  Active     = "Active"
+  Suspended  = "Suspended"
+}
+
+enum chain {
+  @@type("pg/text@1")
+  base   = "base"
+  solana = "solana"
+}
+
+enum wallet_type {
+  @@type("pg/text@1")
+  Generated = "Generated"
+  External  = "External"
+}
+
+enum wallet_status {
+  @@type("pg/text@1")
+  Active   = "Active"
+  Archived = "Archived"
+}
+
+enum fiat_currency {
+  @@type("pg/text@1")
+  usd = "usd"
+  eur = "eur"
+}
+
+enum transaction_state {
+  @@type("pg/text@1")
+  Received        = "Received"
+  Converting      = "Converting"
+  Credited        = "Credited"
+  PayoutPending   = "PayoutPending"
+  PayoutSubmitted = "PayoutSubmitted"
+  Completed       = "Completed"
+  InReview        = "InReview"
+  Refunded        = "Refunded"
+  PayoutFailed    = "PayoutFailed"
+}
+
+enum transaction_event_source {
+  @@type("pg/text@1")
+  bridge_va       = "bridge_va"
+  bridge_transfer = "bridge_transfer"
+  system          = "system"
+  admin           = "admin"
+}
+
+enum fee_schedule_status {
+  @@type("pg/text@1")
+  Draft      = "Draft"
+  Scheduled  = "Scheduled"
+  Active     = "Active"
+  Superseded = "Superseded"
+  Cancelled  = "Cancelled"
+}
+
+enum webhook_event_status {
+  @@type("pg/text@1")
+  Pending   = "Pending"
+  Processed = "Processed"
+  Failed    = "Failed"
+  Ignored   = "Ignored"
+}
+
+enum ticket_status {
+  @@type("pg/text@1")
+  Open     = "Open"
+  Pending  = "Pending"
+  Resolved = "Resolved"
+  Closed   = "Closed"
+}
+
+enum otp_purpose {
+  @@type("pg/text@1")
+  EmailVerify     = "EmailVerify"
+  PasswordReset   = "PasswordReset"
+  WalletKeyExport = "WalletKeyExport"
+  WalletChange    = "WalletChange"
+}
+
+// ---------------------------------------------------------------------------
+// Users and customers
+// ---------------------------------------------------------------------------
+
+model User {
+  id              Int                @id @default(autoincrement())
+  email           String             @unique
+  password        String
+  name            String
+  role            user_role          @default(Customer)
+  isEmailVerified Boolean            @default(false)
+  totpSecret      String?
+  totpEnabled     Boolean            @default(false)
+  lastLoginAt     Timestamp?
+  deletedAt       Timestamp?
+  createdAt       Timestamp          @default(now())
+  updatedAt       temporal.updatedAtJsDate()
+  customer        Customer?
+  oneTimeCodes    OneTimeCode[]
+  supportMessages SupportMessage[]
+
+  @@map("users")
+}
+
+model Customer {
+  id               Int               @id @default(autoincrement())
+  userId           Int               @unique
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             customer_type?
+  status           customer_status   @default(Onboarding)
+  // Self-declared at signup, used only for the custodial-wallet geography rules
+  country          String?
+  region           String?
+  bridgeCustomerId String?           @unique
+  kycLinkId        String?           @unique
+  kycStatus        String            @default("not_started")
+  tosStatus        String            @default("pending")
+  kycLink          String?
+  tosLink          String?
+  endorsements     Jsonb?
+  rejectionReasons Jsonb?
+  payoutWalletId   Int?
+  onboardedAt      Timestamp?
+  suspendedAt      Timestamp?
+  createdAt        Timestamp         @default(now())
+  updatedAt        temporal.updatedAtJsDate()
+  wallets          Wallet[]
+  custodialWallets CustodialWallet[]
+  virtualAccounts  VirtualAccount[]
+  transactions     Transaction[]
+  monthlyVolumes   MonthlyVolume[]
+  supportTickets   SupportTicket[]
+
+  @@index([status])
+  @@map("customers")
+}
+
+model OneTimeCode {
+  id         Int         @id @default(autoincrement())
+  userId     Int
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose    otp_purpose
+  codeHash   String
+  attempts   Int         @default(0)
+  meta       Jsonb?
+  expiresAt  Timestamp
+  consumedAt Timestamp?
+  createdAt  Timestamp   @default(now())
+
+  @@index([userId, purpose])
+  @@map("one_time_codes")
+}
+
+// ---------------------------------------------------------------------------
+// Customer payout wallets and their encrypted keys
+// ---------------------------------------------------------------------------
+
+model Wallet {
+  id            Int           @id @default(autoincrement())
+  customerId    Int
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  chain         chain
+  address       String
+  label         String?
+  type          wallet_type
+  status        wallet_status @default(Active)
+  keyExportedAt Timestamp?
+  keyRemovedAt  Timestamp?
+  createdAt     Timestamp     @default(now())
+  updatedAt     temporal.updatedAtJsDate()
+  key           WalletKey?
+
+  @@unique([customerId, chain, address])
+  @@index([customerId, chain], where: "(\"type\" = 'Generated')", unique: true, name: "wallets_one_generated_per_chain")
+  @@map("wallets")
+}
+
+model WalletKey {
+  id               Int       @id @default(autoincrement())
+  walletId         Int       @unique
+  wallet           Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  keyFormat        String
+  algorithm        String    @default("aes-256-gcm")
+  ciphertext       Bytes
+  iv               Bytes
+  authTag          Bytes
+  wrappedDataKey   Bytes
+  dataKeyIv        Bytes
+  dataKeyAuthTag   Bytes
+  masterKeyVersion String
+  createdAt        Timestamp @default(now())
+  updatedAt        temporal.updatedAtJsDate()
+
+  @@index([masterKeyVersion])
+  @@map("wallet_keys")
+}
+
+model KeyVaultCanary {
+  id               Int       @id @default(autoincrement())
+  masterKeyVersion String    @unique
+  ciphertext       Bytes
+  iv               Bytes
+  authTag          Bytes
+  wrappedDataKey   Bytes
+  dataKeyIv        Bytes
+  dataKeyAuthTag   Bytes
+  createdAt        Timestamp @default(now())
+
+  @@map("key_vault_canaries")
+}
+
+// ---------------------------------------------------------------------------
+// Bridge resources
+// ---------------------------------------------------------------------------
+
+model CustodialWallet {
+  id              Int              @id @default(autoincrement())
+  customerId      Int
+  customer        Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  bridgeWalletId  String           @unique
+  chain           chain
+  address         String
+  createdAt       Timestamp        @default(now())
+  updatedAt       temporal.updatedAtJsDate()
+  virtualAccounts VirtualAccount[]
+
+  @@unique([customerId, chain])
+  @@map("custodial_wallets")
+}
+
+model VirtualAccount {
+  id                     Int             @id @default(autoincrement())
+  customerId             Int
+  customer               Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  custodialWalletId      Int
+  custodialWallet        CustodialWallet @relation(fields: [custodialWalletId], references: [id], onDelete: Restrict)
+  bridgeVirtualAccountId String          @unique
+  sourceCurrency         fiat_currency
+  destinationCurrency    String
+  destinationChain       chain
+  depositInstructions    Jsonb
+  status                 String
+  deactivatedAt          Timestamp?
+  createdAt              Timestamp       @default(now())
+  updatedAt              temporal.updatedAtJsDate()
+  transactions           Transaction[]
+
+  @@index([customerId])
+  @@map("virtual_accounts")
+}
+
+// ---------------------------------------------------------------------------
+// Money flow
+// ---------------------------------------------------------------------------
+
+model Transaction {
+  id                        Int                @id @default(autoincrement())
+  customerId                Int
+  customer                  Customer           @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  virtualAccountId          Int?
+  virtualAccount            VirtualAccount?    @relation(fields: [virtualAccountId], references: [id], onDelete: SetNull)
+  bridgeDepositId           String             @unique
+  rail                      String?
+  currency                  fiat_currency
+  grossAmountInCents        BigInt
+  usdEquivalentInCents      BigInt?
+  fxRate                    String?
+  exchangeFeeInCents        BigInt?
+  creditedAmountInCents     BigInt?
+  feeInCents                BigInt?
+  netAmountInCents          BigInt?
+  feeBreakdown              Jsonb?
+  feeScheduleId             Int?
+  feeSchedule               FeeSchedule?       @relation(fields: [feeScheduleId], references: [id], onDelete: Restrict)
+  destinationWalletSnapshot Jsonb?
+  sourceDetails             Jsonb?
+  bridgeTransferId          String?            @unique
+  txHash                    String?
+  state                     transaction_state  @default(Received)
+  failureReason             String?
+  attempts                  Int                @default(0)
+  nextRetryAt               Timestamp?
+  periodKey                 String?
+  fundsReceivedAt           Timestamp?
+  creditedAt                Timestamp?
+  completedAt               Timestamp?
+  version                   Int                @default(0)
+  createdAt                 Timestamp          @default(now())
+  updatedAt                 temporal.updatedAtJsDate()
+  events                    TransactionEvent[]
+
+  @@index([customerId, createdAt])
+  @@index([state])
+  @@map("transactions")
+}
+
+model TransactionEvent {
+  id            Int                      @id @default(autoincrement())
+  transactionId Int
+  transaction   Transaction              @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  source        transaction_event_source
+  type          String
+  payload       Jsonb?
+  createdAt     Timestamp                @default(now())
+
+  @@index([transactionId])
+  @@map("transaction_events")
+}
+
+model MonthlyVolume {
+  id            Int       @id @default(autoincrement())
+  customerId    Int
+  customer      Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  periodKey     String
+  volumeInCents BigInt    @default(0)
+  feeInCents    BigInt    @default(0)
+  txCount       Int       @default(0)
+  version       Int       @default(0)
+  createdAt     Timestamp @default(now())
+  updatedAt     temporal.updatedAtJsDate()
+
+  @@unique([customerId, periodKey])
+  @@map("monthly_volumes")
+}
+
+// ---------------------------------------------------------------------------
+// Fee schedules (admin-editable, effective from the 1st of a future month)
+// ---------------------------------------------------------------------------
+
+model FeeSchedule {
+  id              Int                 @id @default(autoincrement())
+  effectivePeriod String
+  status          fee_schedule_status @default(Draft)
+  notes           String?
+  notifyCustomers Boolean             @default(false)
+  createdById     Int?
+  publishedById   Int?
+  publishedAt     Timestamp?
+  cancelledAt     Timestamp?
+  createdAt       Timestamp           @default(now())
+  updatedAt       temporal.updatedAtJsDate()
+  tiers           FeeTier[]
+  transactions    Transaction[]
+
+  @@index([effectivePeriod], where: "(\"status\" IN ('Scheduled', 'Active', 'Superseded'))", unique: true, name: "fee_schedules_one_per_period")
+  @@index([status])
+  @@map("fee_schedules")
+}
+
+model FeeTier {
+  id            Int         @id @default(autoincrement())
+  feeScheduleId Int
+  feeSchedule   FeeSchedule @relation(fields: [feeScheduleId], references: [id], onDelete: Cascade)
+  position      Int
+  fromInCents   BigInt
+  toInCents     BigInt?
+  rateBps       Int
+
+  @@unique([feeScheduleId, position])
+  @@map("fee_tiers")
+}
+
+// ---------------------------------------------------------------------------
+// Support, audit, webhooks, settings
+// ---------------------------------------------------------------------------
+
+model SupportTicket {
+  id            Int              @id @default(autoincrement())
+  customerId    Int
+  customer      Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  subject       String
+  status        ticket_status    @default(Open)
+  assigneeId    Int?
+  lastMessageAt Timestamp?
+  createdAt     Timestamp        @default(now())
+  updatedAt     temporal.updatedAtJsDate()
+  messages      SupportMessage[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        Int           @id @default(autoincrement())
+  ticketId  Int
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  body      String
+  isStaff   Boolean       @default(false)
+  createdAt Timestamp     @default(now())
+
+  @@index([ticketId])
+  @@map("support_messages")
+}
+
+model AuditLog {
+  id        Int       @id @default(autoincrement())
+  actorId   Int?
+  actorRole String?
+  action    String
+  entity    String
+  entityId  String?
+  before    Jsonb?
+  after     Jsonb?
+  ip        String?
+  createdAt Timestamp @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model WebhookEvent {
+  id            Int                  @id @default(autoincrement())
+  bridgeEventId String               @unique
+  category      String
+  type          String
+  objectId      String?
+  payload       Jsonb
+  status        webhook_event_status @default(Pending)
+  error         String?
+  attempts      Int                  @default(0)
+  receivedAt    Timestamp            @default(now())
+  processedAt   Timestamp?
+  createdAt     Timestamp            @default(now())
+  updatedAt     temporal.updatedAtJsDate()
+
+  @@index([status])
+  @@index([category, objectId])
+  @@map("webhook_events")
+}
+
+model AppSetting {
+  key       String    @id
+  value     Jsonb
+  updatedAt temporal.updatedAtJsDate()
+
+  @@map("app_settings")
+}

@@ -1,0 +1,8 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p We couldn't complete a payout to your wallet yet. Your funds are safe and we'll retry automatically; our team has been notified.
+  +rows(rows)
+  +button(frontendUrl + '/transactions/' + transactionId, 'View transaction')

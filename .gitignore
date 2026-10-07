@@ -1,0 +1,30 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Compiled output
+dist/
+build/
+*.tsbuildinfo
+
+# Local mail output (MAIL_TRANSPORT=log)
+tmp/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*~
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+secrets/
+
+# Other
+.DS_Store

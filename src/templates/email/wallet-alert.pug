@@ -1,0 +1,9 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p A change was made to your payout wallets:
+  +rows(rows)
+  p If you made this change, no action is needed. If you didn't, change your password immediately and contact support.
+  +button(frontendUrl + '/wallets', 'Review wallets')

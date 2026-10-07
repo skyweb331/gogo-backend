@@ -1,0 +1,7 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p Your identity verification was approved. Your USD and EUR deposit accounts are ready.
+  +button(frontendUrl + '/virtual-accounts', 'View deposit details')

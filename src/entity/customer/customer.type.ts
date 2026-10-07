@@ -1,0 +1,31 @@
+import { IsOptional, MaxLength } from 'class-validator';
+import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+
+import { PaginatedResponse } from '#src/graphql/response/index.js';
+import { QueryArgsBase } from '#src/graphql/queryArgs.js';
+
+import { Customer } from './customer.entity.js';
+
+@ArgsType()
+export class CustomerQueryArgs extends QueryArgsBase {
+  @Field(() => String, { nullable: true, description: 'Matches the user email or name' })
+  @IsOptional()
+  @MaxLength(120)
+  search?: string;
+}
+
+@ObjectType()
+export class CustomersResponse extends PaginatedResponse {
+  @Field(() => [Customer], { nullable: true })
+  customers?: Customer[];
+}
+
+@InputType()
+export class SuspendCustomerInput {
+  @Field(() => Int)
+  id: number;
+
+  @Field(() => String)
+  @MaxLength(500)
+  reason: string;
+}

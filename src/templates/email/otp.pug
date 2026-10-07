@@ -1,0 +1,8 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p Use this code to confirm: <strong>#{action}</strong>
+  +code(code)
+  p The code expires in 10 minutes. If you didn't request this, change your password right away and contact support.

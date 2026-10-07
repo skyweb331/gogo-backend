@@ -1,0 +1,35 @@
+import { ArgsType, Field, Int, ObjectType } from 'type-graphql';
+
+import { PaginatedResponse } from '#src/graphql/response/index.js';
+import { QueryArgsBase } from '#src/graphql/queryArgs.js';
+import { GraphQLBigInt } from '#src/graphql/scalar/index.js';
+
+@ObjectType()
+export class MonthlyVolume {
+  @Field(() => Int)
+  id: number;
+
+  @Field(() => Int)
+  customerId: number;
+
+  @Field(() => String)
+  periodKey: string;
+
+  @Field(() => GraphQLBigInt, { description: 'USD-equivalent deposit volume' })
+  volumeInCents: bigint;
+
+  @Field(() => GraphQLBigInt, { description: 'Fees charged, USD cents' })
+  feeInCents: bigint;
+
+  @Field(() => Int)
+  txCount: number;
+}
+
+@ArgsType()
+export class MonthlyVolumeQueryArgs extends QueryArgsBase {}
+
+@ObjectType()
+export class MonthlyVolumesResponse extends PaginatedResponse {
+  @Field(() => [MonthlyVolume], { nullable: true })
+  monthlyVolumes?: MonthlyVolume[];
+}

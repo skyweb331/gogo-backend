@@ -1,0 +1,8 @@
+export { UserRole } from './graphql/enum.js';
+
+export type XOR<T, U> = T extends object
+  ? U extends object
+    ? (Without<T, U> & U) | (Without<U, T> & T)
+    : U
+  : T;
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };

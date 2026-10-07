@@ -1,0 +1,82 @@
+{
+  "name": "gogo-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GOGO backend: GraphQL API for gogo-frontend and gogo-admin, Bridge integration, fee engine and payouts",
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.3 <23",
+    "npm": ">=10.9"
+  },
+  "imports": {
+    "#src/*": "./dist/src/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
+    "dev": "node scripts/dev.mjs",
+    "start": "node --enable-source-maps dist/src/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write .",
+    "db:contract": "prisma contract emit",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:seed": "npm run build && node --enable-source-maps dist/prisma/seed.js",
+    "keys:rewrap": "npm run build && node --enable-source-maps dist/src/scripts/keys-rewrap.js",
+    "keys:generate": "node -e \"console.log('v1:' + require('crypto').randomBytes(32).toString('base64'))\"",
+    "prepare": "husky || true"
+  },
+  "dependencies": {
+    "@apollo/server": "5.5.1",
+    "@as-integrations/express5": "1.1.2",
+    "@aws-sdk/client-sesv2": "3.1146.0",
+    "@prisma/orm-postgres": "8.0.0-rc.14",
+    "@sentry/node": "11.4.0",
+    "bcryptjs": "3.0.3",
+    "bs58": "6.0.0",
+    "class-validator": "0.15.1",
+    "cors": "2.8.6",
+    "dataloader": "2.2.3",
+    "dayjs": "1.11.23",
+    "dotenv": "18.0.5",
+    "dotenv-expand": "13.0.0",
+    "express": "5.2.1",
+    "express-rate-limit": "8.7.1",
+    "graphql": "16.14.2",
+    "graphql-fields": "2.0.3",
+    "graphql-scalars": "1.26.0",
+    "graphql-type-json": "0.3.2",
+    "helmet": "8.3.0",
+    "jsonwebtoken": "9.0.3",
+    "lodash": "4.18.1",
+    "otplib": "13.5.0",
+    "pg-boss": "12.37.0",
+    "pug": "3.0.4",
+    "reflect-metadata": "0.2.2",
+    "temporal-polyfill": "1.0.5",
+    "type-graphql": "2.0.0-rc.3",
+    "typedi": "0.10.0",
+    "viem": "2.57.3",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/cors": "2.8.19",
+    "@types/express": "5.0.6",
+    "@types/graphql-fields": "1.3.9",
+    "@types/jsonwebtoken": "9.0.10",
+    "@types/lodash": "4.17.25",
+    "@types/node": "22.20.5",
+    "@types/pug": "2.0.10",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.9",
+    "prisma": "8.0.0-rc.20",
+    "typescript": "6.0.3"
+  },
+  "lint-staged": {
+    "*.{ts,mts,mjs,json}": [
+      "prettier --write"
+    ],
+    "*.ts": [
+      "bash -c 'tsc -p tsconfig.json --noEmit'"
+    ]
+  }
+}

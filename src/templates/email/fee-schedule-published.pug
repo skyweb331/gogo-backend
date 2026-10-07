@@ -1,0 +1,10 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p Our monthly fee schedule is changing. The new tiers apply to deposits from <strong>#{periodLabel}</strong>:
+  +rows(tiers)
+  if notes
+    p= notes
+  +button(frontendUrl + '/pricing', 'See pricing')

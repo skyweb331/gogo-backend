@@ -1,0 +1,12 @@
+extends layout.pug
+
+block content
+  p
+    strong= subject
+  each line in lines
+    p(style="margin:4px 0;font-family:Menlo,Consolas,monospace;font-size:13px;")= line
+  p
+    a(href=adminUrl) Open admin console
+
+block footer
+  | Operational alert from #{appName}.
