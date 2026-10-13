@@ -159,7 +159,11 @@ const app = async () => {
 
   Sentry.setupExpressErrorHandler(app);
 
-  await new Promise<void>((resolve) => httpServer.listen({ port: config.PORT }, resolve));
+  // Bind IPv4 explicitly. A dual-stack IPv6 listener is not reachable from the
+  // Windows host through WSL localhost forwarding.
+  await new Promise<void>((resolve) =>
+    httpServer.listen({ port: config.PORT, host: '0.0.0.0' }, resolve)
+  );
   console.log(`🚀 Server ready at http://localhost:${config.PORT}/graphql`);
 
   const stop = async (signal: string) => {

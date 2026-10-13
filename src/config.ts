@@ -21,6 +21,7 @@ const schema = z.object({
   PORT: z.coerce.number().int().default(4000),
   DATABASE_URL: z.string().min(1),
   DB_LOG_QUERIES: bool,
+  SKIP_EMAIL_VERIFICATION: bool,
 
   CORS_ORIGINS: list,
   FRONTEND_URL: z.string().url().default('http://localhost:3000'),
@@ -28,7 +29,7 @@ const schema = z.object({
 
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().default('7d'),
-  TOTP_ISSUER: z.string().default('GOGO Admin'),
+  TOTP_ISSUER: z.string().default('NxPay Admin'),
 
   BRIDGE_ENV: z.enum(['sandbox', 'production']).default('sandbox'),
   BRIDGE_API_URL: z.string().url().default('https://api.sandbox.bridge.xyz'),
@@ -52,8 +53,8 @@ const schema = z.object({
   WALLET_EXPORT_LIMIT_PER_DAY: z.coerce.number().int().positive().default(3),
 
   MAIL_TRANSPORT: z.enum(['ses', 'log']).default('log'),
-  MAIL_FROM: z.string().default('GOGO <no-reply@gogo.local>'),
-  OPS_ALERT_EMAIL: z.string().default('ops@gogo.local'),
+  MAIL_FROM: z.string().default('NxPay <no-reply@nxpay.local>'),
+  OPS_ALERT_EMAIL: z.string().default('ops@nxpay.local'),
   AWS_REGION: z.string().default('us-east-1'),
   AWS_ACCESS_KEY_ID: z.string().default(''),
   AWS_SECRET_ACCESS_KEY: z.string().default(''),
@@ -74,4 +75,5 @@ if (!parsed.success) {
 
 export const config = parsed.data;
 export const isProduction = config.NODE_ENV === 'production';
+export const skipEmailVerification = !isProduction && config.SKIP_EMAIL_VERIFICATION;
 export const isBridgeSandbox = config.BRIDGE_ENV === 'sandbox';

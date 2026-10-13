@@ -1,6 +1,6 @@
 /**
- * Fee schedule rules, shared verbatim with gogo-admin
- * (`gogo-admin/src/sections/FeeSchedule/feeRules.ts`); keep both copies identical.
+ * Fee schedule rules, shared verbatim with nxpay-admin
+ * (`nxpay-admin/src/sections/FeeSchedule/feeRules.ts`); keep both copies identical.
  * Only depends on zod, amounts are integer cents as bigint.
  */
 import { z } from 'zod';

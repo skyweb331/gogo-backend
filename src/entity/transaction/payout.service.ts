@@ -260,7 +260,7 @@ export class PayoutService {
         amount: centsToDecimal(tx.creditedAmountInCents),
         developer_fee: centsToDecimal(tx.feeInCents),
         on_behalf_of: customer.bridgeCustomerId,
-        client_reference_id: `gogo-tx-${tx.id}`,
+        client_reference_id: `nxpay-tx-${tx.id}`,
         source: {
           payment_rail: source.chain as 'base' | 'solana',
           currency: stablecoin,
@@ -353,7 +353,8 @@ export class PayoutService {
   private async findForTransfer(transfer: BridgeTransfer) {
     const byId = await this.transactions.getByTransferId(transfer.id);
     if (byId) return byId;
-    const match = /^gogo-tx-(\d+)$/.exec(transfer.client_reference_id ?? '');
+    // Transfers created before the rename carry the legacy prefix.
+    const match = /^(?:nxpay|gogo)-tx-(\d+)$/.exec(transfer.client_reference_id ?? '');
     return match ? this.transactions.getById(Number(match[1])) : null;
   }
 
@@ -558,7 +559,7 @@ export class PayoutService {
         explorerUrl: explorerTxUrl(wallet?.chain, tx.txHash),
         rows: [
           ['Deposit', formatMoney(tx.grossAmountInCents, tx.currency)],
-          ['GOGO fee', formatMoney(tx.feeInCents ?? 0n, tx.currency)],
+          ['NxPay fee', formatMoney(tx.feeInCents ?? 0n, tx.currency)],
           ['You received', formatToken(net, stablecoin)],
           ['Network', CHAIN_NAME[wallet?.chain ?? ''] ?? wallet?.chain ?? ''],
           ['Wallet', wallet ? shortAddress(wallet.address) : ''],

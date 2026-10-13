@@ -30,7 +30,7 @@ export class BridgeVirtualAccountsApi {
 
   /**
    * Fiat in -> stablecoin into the customer's Bridge custodial wallet with a 0% fee.
-   * GOGO's tiered fee is applied later on the payout transfer (`developer_fee`).
+   * NxPay's tiered fee is applied later on the payout transfer (`developer_fee`).
    */
   create(input: CreateVirtualAccountInput) {
     return this.client.post<BridgeVirtualAccount>(

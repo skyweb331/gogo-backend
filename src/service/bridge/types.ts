@@ -1,5 +1,5 @@
 /**
- * Bridge API shapes (v0), limited to the fields GOGO reads. Responses are kept as
+ * Bridge API shapes (v0), limited to the fields NxPay reads. Responses are kept as
  * loose objects so new Bridge fields never break parsing; the raw payload is stored
  * alongside (TransactionEvent.payload, WebhookEvent.payload) for audit.
  */

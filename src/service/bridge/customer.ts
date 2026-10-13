@@ -58,7 +58,7 @@ export class BridgeCustomersApi {
   /**
    * Sandbox only: create an approved-able individual customer from the fixture identity.
    * Business onboarding is simulated with the same individual fixture (sandbox KYB
-   * needs associated persons that GOGO never collects).
+   * needs associated persons that NxPay never collects).
    */
   async createSandboxCustomer(input: { fullName: string; email: string; idempotencyKey: string }) {
     assertSandbox('createSandboxCustomer');

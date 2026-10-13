@@ -189,7 +189,7 @@ export class DepositService {
         break;
       }
       case 'in_review':
-        patch = { failureReason: 'Under review by Bridge' };
+        patch = { failureReason: 'Under compliance review' };
         break;
       case 'refund_in_flight':
         patch = {

@@ -52,7 +52,7 @@ export class QueueService {
     const boss = new PgBoss({
       connectionString: config.DATABASE_URL,
       schema: 'pgboss',
-      application_name: 'gogo-jobs',
+      application_name: 'nxpay-jobs',
     });
     boss.on('error', (error) => {
       console.error('[queue] error', error);

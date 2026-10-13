@@ -85,7 +85,7 @@ export class WalletService {
           customerId,
           chain,
           address: generated.address,
-          label: `GOGO ${CHAIN_NAME[chain]} wallet`,
+          label: `NxPay ${CHAIN_NAME[chain]} wallet`,
           type: WalletType.Generated,
           status: WalletStatus.Active,
         });
@@ -126,7 +126,7 @@ export class WalletService {
     const code = await this.codes.issueCode(user.id, OtpPurpose.WalletChange);
     await this.mailer.send({
       to: user.email,
-      subject: 'Your GOGO confirmation code',
+      subject: 'Your NxPay confirmation code',
       template: 'otp',
       locals: { name: user.name, code, action: 'change your payout wallets' },
     });
@@ -272,9 +272,9 @@ export class WalletService {
   async requestKeyExport(user: UserRow, customer: CustomerRow, walletId: number) {
     const wallet = await this.ownedWallet(customer, walletId);
     if (wallet.type !== WalletType.Generated)
-      throw new AppError('Only GOGO-generated wallets have a stored key');
+      throw new AppError('Only NxPay-generated wallets have a stored key');
     if (!(await this.walletKeys.hasKey(wallet.id)))
-      throw new AppError('The key for this wallet was removed from GOGO');
+      throw new AppError('The key for this wallet was removed from NxPay');
     this.limiter.consume(`wallet-export-otp:${user.id}`, 5, HOUR);
     const code = await this.codes.issueCode(user.id, OtpPurpose.WalletKeyExport, {
       walletId: wallet.id,
@@ -302,7 +302,7 @@ export class WalletService {
   ): Promise<ExportedWalletKey> {
     const wallet = await this.ownedWallet(customer, walletId);
     if (wallet.type !== WalletType.Generated)
-      throw new ForbiddenError('Only GOGO-generated wallets have a stored key');
+      throw new ForbiddenError('Only NxPay-generated wallets have a stored key');
 
     const since = new Date(Date.now() - 24 * HOUR);
     const { exportsToday } = await this.prisma.orm.AuditLog.where((a) =>
@@ -317,7 +317,7 @@ export class WalletService {
     await this.reauth(user, password, otp, OtpPurpose.WalletKeyExport, { walletId: wallet.id });
 
     const privateKey = await this.walletKeys.exportKey(wallet);
-    if (!privateKey) throw new AppError('The key for this wallet was removed from GOGO');
+    if (!privateKey) throw new AppError('The key for this wallet was removed from NxPay');
 
     const now = new Date();
     if (!wallet.keyExportedAt)
@@ -370,7 +370,7 @@ export class WalletService {
     }
   }
 
-  /** After an export, the customer can make the wallet self-custodied by deleting GOGO's copy. */
+  /** After an export, the customer can make the wallet self-custodied by deleting NxPay's copy. */
   async removeKey(
     user: UserRow,
     customer: CustomerRow,
@@ -380,9 +380,9 @@ export class WalletService {
   ) {
     const wallet = await this.ownedWallet(customer, walletId);
     if (wallet.type !== WalletType.Generated)
-      throw new AppError('Only GOGO-generated wallets have a stored key');
+      throw new AppError('Only NxPay-generated wallets have a stored key');
     if (!wallet.keyExportedAt)
-      throw new AppError('Export and back up the key before removing it from GOGO');
+      throw new AppError('Export and back up the key before removing it from NxPay');
     if (!(await this.walletKeys.hasKey(wallet.id))) return wallet;
 
     await this.auth.assertPassword(user, password);
@@ -399,9 +399,9 @@ export class WalletService {
       after: { chain: wallet.chain, address: wallet.address },
     });
     this.alert(user, [
-      ['Change', 'Private key removed from GOGO'],
+      ['Change', 'Private key removed from NxPay'],
       ['Address', wallet.address],
-      ['Note', 'GOGO can no longer export this key. The wallet still receives payouts.'],
+      ['Note', 'NxPay can no longer export this key. The wallet still receives payouts.'],
     ]);
     return updated;
   }
@@ -409,7 +409,7 @@ export class WalletService {
   private alert(user: UserRow, rows: [string, string][]) {
     this.mailer.sendSafe({
       to: user.email,
-      subject: 'Your GOGO wallets changed',
+      subject: 'Your NxPay wallets changed',
       template: 'wallet-alert',
       locals: { name: user.name, rows },
     });

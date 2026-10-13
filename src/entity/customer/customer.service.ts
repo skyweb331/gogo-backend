@@ -41,12 +41,12 @@ const escapeLike = (value: string) => value.replace(/[\\%_]/g, (c) => `\\${c}`);
 export function assertSupportedGeography(country: string, region?: string | null) {
   const c = country.toUpperCase();
   if (config.BLOCKED_COUNTRIES.map((x) => x.toUpperCase()).includes(c)) {
-    throw new AppError('GOGO is not available in your country yet', { field: 'country' });
+    throw new AppError('NxPay is not available in your country yet', { field: 'country' });
   }
   if (c === 'US') {
     if (!region) throw new AppError('Select your state', { field: 'region' });
     if (config.BLOCKED_US_STATES.map((x) => x.toUpperCase()).includes(region.toUpperCase())) {
-      throw new AppError('GOGO is not available in your state yet', { field: 'region' });
+      throw new AppError('NxPay is not available in your state yet', { field: 'region' });
     }
   }
 }

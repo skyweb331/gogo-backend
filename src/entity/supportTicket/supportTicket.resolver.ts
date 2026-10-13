@@ -118,11 +118,11 @@ export class SupportTicketResolver {
 @Service()
 @Resolver(() => SupportMessage)
 export class SupportMessageResolver {
-  /** Customers see "GOGO Support" for staff replies; staff see the actual author. */
+  /** Customers see "NxPay Support" for staff replies; staff see the actual author. */
   @FieldResolver(() => String)
   async authorName(@Root() message: SupportMessage, @Ctx() ctx: Context) {
     const viewerIsStaff = ctx.user?.role === UserRole.Admin || ctx.user?.role === UserRole.Support;
-    if (message.isStaff && !viewerIsStaff) return 'GOGO Support';
+    if (message.isStaff && !viewerIsStaff) return 'NxPay Support';
     const author = await ctx.dataLoader.get('userLoader').load(message.authorId);
     return author?.name ?? 'Unknown';
   }

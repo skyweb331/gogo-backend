@@ -122,9 +122,7 @@ export class OnboardingService {
       );
     }
 
-    const updated = isBridgeSandbox
-      ? await this.startSandbox(user, customer, type)
-      : await this.startHosted(user, customer, type);
+    const updated = await this.startHosted(user, customer, type);
 
     await this.audit.log(ctx, {
       action: 'onboarding.start',
@@ -135,7 +133,7 @@ export class OnboardingService {
     return updated;
   }
 
-  /** Production: Bridge-hosted ToS + KYC/KYB. Only name, email, type and endorsements are sent. */
+  /** Bridge-hosted ToS + KYC/KYB. Only name, email, type and endorsements are sent. */
   private async startHosted(user: UserRow, customer: CustomerRow, type: CustomerType) {
     let link: BridgeKycLink;
     try {
@@ -164,38 +162,29 @@ export class OnboardingService {
   }
 
   /**
-   * Sandbox only (KYC links don't work there): create the Bridge customer from the
-   * fixture identity, then simulate approval. Refuses to run outside sandbox.
+   * Sandbox only: approves the identity without filling in Bridge's hosted form.
+   * The terms must be accepted first so account creation behaves like production.
    */
-  private async startSandbox(user: UserRow, customer: CustomerRow, type: CustomerType) {
-    let remote: BridgeCustomer;
+  async simulateApproval(customer: CustomerRow) {
+    if (!isBridgeSandbox) throw new AppError('Test approval is only available in sandbox');
+    this.assertBridge();
+    if (customer.status !== CustomerStatus.Onboarding)
+      throw new AppError('Identity verification is already complete');
+    if (customer.tosStatus !== 'approved') throw new AppError('Accept the terms of service first');
+    if (!customer.bridgeCustomerId) throw new AppError('Start verification first');
     try {
-      remote = customer.bridgeCustomerId
-        ? await this.bridge.customers.get(customer.bridgeCustomerId)
-        : await this.bridge.customers.createSandboxCustomer({
-            fullName: user.name,
-            email: user.email,
-            idempotencyKey: `sandbox-customer-${customer.id}`,
-          });
-      await this.customers.update(customer.id, {
-        type,
-        bridgeCustomerId: remote.id,
-        tosStatus: 'approved',
-      });
-      await this.bridge.customers.simulateKycApproval(remote.id);
-      remote = await this.bridge.customers.get(remote.id);
+      await this.bridge.customers.simulateKycApproval(customer.bridgeCustomerId);
     } catch (error) {
       throw this.userFacing(error);
     }
-    const fresh = (await this.customers.getById(customer.id))!;
-    return this.applyBridgeCustomer(fresh, remote);
+    return this.refresh(customer);
   }
 
   /** Re-reads status from Bridge (button on the onboarding page; also the poller). */
   async refresh(customer: CustomerRow) {
     this.assertBridge();
     try {
-      if (customer.kycLinkId && !isBridgeSandbox) {
+      if (customer.kycLinkId) {
         const link = await this.bridge.kycLinks.get(customer.kycLinkId);
         customer = await this.applyKycLink(customer, link);
       }
@@ -212,7 +201,6 @@ export class OnboardingService {
   /** Fresh hosted link when the old one expired or Bridge requests more information. */
   async regenerateKycLink(customer: CustomerRow) {
     this.assertBridge();
-    if (isBridgeSandbox) return this.refresh(customer);
     try {
       if (customer.bridgeCustomerId) {
         const { url } = await this.bridge.customers.kycLink(customer.bridgeCustomerId, {
@@ -274,7 +262,7 @@ export class OnboardingService {
         if (user) {
           this.mailer.sendSafe({
             to: user.email,
-            subject: 'Your GOGO deposit accounts are ready',
+            subject: 'Your NxPay deposit accounts are ready',
             template: 'kyc-approved',
             locals: { name: user.name },
           });

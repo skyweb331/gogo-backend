@@ -6,7 +6,7 @@ import { config, isProduction } from '#src/config.js';
 import { PrismaService } from '#src/service/prisma.js';
 
 const ALGORITHM = 'aes-256-gcm';
-const CANARY_PLAINTEXT = 'gogo-keyvault-canary';
+const CANARY_PLAINTEXT = 'nxpay-keyvault-canary';
 
 export interface SealedSecret {
   ciphertext: Uint8Array;

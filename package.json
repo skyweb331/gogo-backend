@@ -1,8 +1,8 @@
 {
-  "name": "gogo-backend",
+  "name": "nxpay-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "GOGO backend: GraphQL API for gogo-frontend and gogo-admin, Bridge integration, fee engine and payouts",
+  "description": "NxPay backend: GraphQL API for nxpay-frontend and nxpay-admin, Bridge integration, fee engine and payouts",
   "type": "module",
   "engines": {
     "node": ">=22.22.3 <23",

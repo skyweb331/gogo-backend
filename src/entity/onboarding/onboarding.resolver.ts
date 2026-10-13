@@ -62,6 +62,14 @@ export class OnboardingResolver {
 
   @Authorized([UserRole.Customer])
   @UseMiddleware(RequireCustomer)
+  @Mutation(() => OnboardingStatus, { description: 'Bridge sandbox only: approve a test identity' })
+  async simulateKycApproval(@Ctx() ctx: Context): Promise<OnboardingStatus> {
+    this.rateLimiter.consume(`onboarding:simulate:${ctx.customer!.id}`, 5, 10 * 60_000);
+    return this.service.status(await this.service.simulateApproval(await this.fresh(ctx)));
+  }
+
+  @Authorized([UserRole.Customer])
+  @UseMiddleware(RequireCustomer)
   @Mutation(() => OnboardingStatus)
   async completeOnboarding(@Ctx() ctx: Context): Promise<OnboardingStatus> {
     this.rateLimiter.consume(`onboarding:complete:${ctx.customer!.id}`, 10, 10 * 60_000);

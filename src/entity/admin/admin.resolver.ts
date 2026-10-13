@@ -25,7 +25,7 @@ export class AdminResolver {
   @Authorized([UserRole.Admin])
   @Query(() => FeeExternalAccountInfo, {
     nullable: true,
-    description: 'Where Bridge pays out GOGO fees',
+    description: 'Where Bridge pays out NxPay fees',
   })
   async feeExternalAccount() {
     return this.service.feeExternalAccount();

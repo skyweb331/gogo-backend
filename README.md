@@ -1,6 +1,6 @@
-# gogo-backend
+# nxpay-backend
 
-GraphQL API for GOGO: Bridge virtual accounts (USD over ACH, EUR over SEPA), conversion to
+GraphQL API for NxPay: Bridge virtual accounts (USD over ACH, EUR over SEPA), conversion to
 USDC/EURC, tiered monthly fees and payouts to the customer's wallet.
 
 Stack: Node 22 (ESM), Express 5, Apollo Server 5, type-graphql, typedi, Prisma 8 (release candidate)
@@ -15,7 +15,7 @@ on Postgres, pg-boss for jobs, pug + AWS SES for email.
 
 ```bash
 nvm use
-createdb gogo                    # or use any Postgres 18 database
+createdb nxpay                    # or use any Postgres 18 database
 cp .env.example .env             # fill in DATABASE_URL, JWT_SECRET, BRIDGE_API_KEY ...
 npm run keys:generate            # paste the output into WALLET_MASTER_KEYS (development only)
 npm ci

@@ -140,7 +140,7 @@ type DashboardStats {
   failedPayouts: Int!
   failedWebhooks: Int!
 
-  """GOGO fees this month (USD equivalent)"""
+  """NxPay fees this month (USD equivalent)"""
   feesInCents: BigInteger!
   inFlightPayouts: Int!
   onboardingCustomers: Int!
@@ -400,6 +400,9 @@ type Mutation {
 
   """Bridge sandbox only"""
   simulateDeposit(input: SimulateDepositInput!): Transaction
+
+  """Bridge sandbox only: approve a test identity"""
+  simulateKycApproval: OnboardingStatus!
   startOnboarding(data: StartOnboardingInput!): OnboardingStatus!
   suspendCustomer(data: SuspendCustomerInput!): Customer!
   updateFeeScheduleDraft(data: UpdateFeeScheduleDraftInput!): FeeSchedule!
@@ -466,7 +469,7 @@ type Query {
   ): CustomersResponse!
   dashboardStats: DashboardStats!
 
-  """Where Bridge pays out GOGO fees"""
+  """Where Bridge pays out NxPay fees"""
   feeExternalAccount: FeeExternalAccountInfo
   feeProgress: FeeProgress!
 
@@ -618,7 +621,7 @@ type Transaction implements Entity & TimeStamp {
   failureReason: String
   feeBreakdown: JSON
 
-  """GOGO fee, in the deposit currency"""
+  """NxPay fee, in the deposit currency"""
   feeInCents: BigInteger
   feeSchedule: FeeSchedule
   feeScheduleId: Int

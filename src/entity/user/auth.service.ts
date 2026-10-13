@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import { generateSecret, generateURI, verify as verifyTotp } from 'otplib';
 
-import { config } from '#src/config.js';
+import { config, skipEmailVerification } from '#src/config.js';
 import type { Context } from '#src/context.js';
 import { isStaff } from '#src/authChecker.js';
 import { PrismaService, type UserRow } from '#src/service/prisma.js';
@@ -72,6 +72,7 @@ export class AuthService {
         name: input.name.trim(),
         password,
         role: UserRole.Customer,
+        isEmailVerified: skipEmailVerification,
       });
       await this.customers.create({
         userId: user.id,
@@ -81,7 +82,7 @@ export class AuthService {
       return user;
     });
 
-    await this.sendVerificationEmail(user);
+    if (!user.isEmailVerified) await this.sendVerificationEmail(user);
     await this.audit.log(
       { user, ip: ctx.ip },
       { action: 'user.signUp', entity: 'User', entityId: user.id }
@@ -302,7 +303,7 @@ export class AuthService {
     const token = await this.codes.issueToken(user.id, OtpPurpose.PasswordReset, { invite: true });
     this.mailer.sendSafe({
       to: user.email,
-      subject: 'You have been invited to GOGO Admin',
+      subject: 'You have been invited to NxPay Admin',
       template: 'staff-invite',
       locals: {
         name: user.name,

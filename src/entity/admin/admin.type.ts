@@ -23,7 +23,7 @@ export class DashboardStats {
   @Field(() => GraphQLBigInt, { description: 'USD equivalent of deposits counted this month' })
   volumeInCents: bigint;
 
-  @Field(() => GraphQLBigInt, { description: 'GOGO fees this month (USD equivalent)' })
+  @Field(() => GraphQLBigInt, { description: 'NxPay fees this month (USD equivalent)' })
   feesInCents: bigint;
 
   @Field(() => Int)

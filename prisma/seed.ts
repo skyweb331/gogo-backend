@@ -36,7 +36,7 @@ async function main() {
       if (!existing) {
         await orm.User.create({
           email,
-          name: process.env['SEED_ADMIN_NAME'] || 'GOGO Admin',
+          name: process.env['SEED_ADMIN_NAME'] || 'NxPay Admin',
           password: await hashPassword(password),
           role: UserRole.Admin,
           isEmailVerified: true,

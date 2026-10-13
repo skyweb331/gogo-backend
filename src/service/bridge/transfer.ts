@@ -16,7 +16,7 @@ export class BridgeTransfersApi {
   constructor(private readonly client: BridgeClient) {}
 
   /**
-   * Custodial wallet -> customer payout wallet with GOGO's exact `developer_fee`.
+   * Custodial wallet -> customer payout wallet with NxPay's exact `developer_fee`.
    * `developer_fee` is denominated in the fiat the source stablecoin is pegged to
    * (USD for USDC, EUR for EURC).
    */

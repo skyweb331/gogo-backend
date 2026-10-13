@@ -431,7 +431,7 @@ export class FeeScheduleService {
       for (const user of users) {
         await this.mailer.send({
           to: user.email,
-          subject: `GOGO fees are changing in ${formatPeriod(schedule.effectivePeriod)}`,
+          subject: `NxPay fees are changing in ${formatPeriod(schedule.effectivePeriod)}`,
           template: 'fee-schedule-published',
           locals: {
             name: user.name,

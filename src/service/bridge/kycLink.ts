@@ -12,7 +12,7 @@ export interface CreateKycLinkInput {
 }
 
 /**
- * Bridge-hosted KYC/KYB + ToS. GOGO sends only name, email, type, endorsements and the
+ * Bridge-hosted KYC/KYB + ToS. NxPay sends only name, email, type, endorsements and the
  * redirect; all identity data is collected by Bridge.
  */
 export class BridgeKycLinksApi {

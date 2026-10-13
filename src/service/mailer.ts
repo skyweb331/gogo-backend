@@ -47,7 +47,7 @@ const htmlToText = (html: string) =>
 
 /**
  * Transactional email.
- * - `MAIL_TRANSPORT=ses`: AWS SES v2 (the only AWS service GOGO uses).
+ * - `MAIL_TRANSPORT=ses`: AWS SES v2 (the only AWS service NxPay uses).
  * - `MAIL_TRANSPORT=log`: prints the email and writes the HTML to `tmp/mail/` (local only).
  */
 @Service()
@@ -68,7 +68,7 @@ export class MailerService {
       if (isProduction) this.templates.set(template, fn);
     }
     return fn({
-      appName: 'GOGO',
+      appName: 'NxPay',
       frontendUrl: config.FRONTEND_URL,
       adminUrl: config.ADMIN_URL,
       year: new Date().getUTCFullYear(),
@@ -128,7 +128,7 @@ export class MailerService {
   opsAlert(subject: string, lines: string[]) {
     this.sendSafe({
       to: config.OPS_ALERT_EMAIL,
-      subject: `[GOGO ops] ${subject}`,
+      subject: `[NxPay ops] ${subject}`,
       template: 'ops-alert',
       locals: { lines },
     });

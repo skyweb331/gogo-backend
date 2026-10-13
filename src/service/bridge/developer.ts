@@ -29,7 +29,7 @@ export interface ConfigureFeeExternalAccountInput {
   };
 }
 
-/** Where Bridge pays out GOGO's developer fees (US bank account, USD only). */
+/** Where Bridge pays out NxPay's developer fees (US bank account, USD only). */
 export class BridgeDeveloperApi {
   constructor(private readonly client: BridgeClient) {}
 

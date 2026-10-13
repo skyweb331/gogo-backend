@@ -41,7 +41,7 @@ export class Transaction extends Entity {
   })
   creditedAmountInCents?: bigint | null;
 
-  @Field(() => GraphQLBigInt, { nullable: true, description: 'GOGO fee, in the deposit currency' })
+  @Field(() => GraphQLBigInt, { nullable: true, description: 'NxPay fee, in the deposit currency' })
   feeInCents?: bigint | null;
 
   @Field(() => GraphQLBigInt, {
