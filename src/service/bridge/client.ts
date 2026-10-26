@@ -133,6 +133,7 @@ export class BridgeClient {
           path,
           json
         );
+        console.warn(`[bridge] ${method} ${url.pathname} error: ${lastError.message}`);
       } catch (error) {
         if (error instanceof BridgeApiError) throw error;
         this.log(method, url, status, Date.now() - started, attempt, options.body, error);

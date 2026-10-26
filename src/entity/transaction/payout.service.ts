@@ -281,6 +281,7 @@ export class PayoutService {
           tx = await this.fail(tx, `Bridge rejected the payout: ${error.message}`, {
             retry: true,
             attempts,
+            details: { request, response: error.body },
           });
           return { finalFailure: tx.nextRetryAt === null };
         }
@@ -326,7 +327,11 @@ export class PayoutService {
   private async fail(
     tx: TransactionRow,
     reason: string,
-    { retry, attempts = tx.attempts }: { retry: boolean; attempts?: number }
+    {
+      retry,
+      attempts = tx.attempts,
+      details,
+    }: { retry: boolean; attempts?: number; details?: Record<string, unknown> }
   ): Promise<TransactionRow> {
     const nextRetryAt = retry ? this.retryAt(attempts) : null;
     const updated = await this.transactions.update(tx, {
@@ -340,6 +345,7 @@ export class PayoutService {
       reason,
       attempt: attempts,
       nextRetryAt,
+      ...details,
     });
     return updated;
   }
