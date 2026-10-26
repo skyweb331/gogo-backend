@@ -122,11 +122,14 @@ export class BridgeClient {
         if (response.ok) return json as T;
 
         const err = json as
-          { code?: string; message?: string; errors?: { message?: string }[] } | undefined;
+          | { code?: string; message?: string; errors?: { message?: string }[]; source?: unknown }
+          | undefined;
+        const message = err?.message ?? err?.errors?.[0]?.message ?? response.statusText;
+        const detail = describeSource(err?.source);
         lastError = new BridgeApiError(
           status,
           err?.code,
-          err?.message ?? err?.errors?.[0]?.message ?? response.statusText,
+          detail ? `${message} (${detail})` : message,
           path,
           json
         );
@@ -182,6 +185,16 @@ export class BridgeClient {
       console.log('[bridge] body', JSON.stringify(redact(body)));
     }
   }
+}
+
+/** Bridge names the rejected fields of a 400 in `source.key`, as a string or `{ field: reason }`. */
+function describeSource(source: unknown): string | undefined {
+  const key = (source as { key?: unknown } | undefined)?.key;
+  if (typeof key === 'string') return key;
+  if (!key || typeof key !== 'object') return undefined;
+  return Object.entries(key)
+    .map(([field, reason]) => `${field}: ${String(reason)}`)
+    .join('; ');
 }
 
 function safeJson(text: string): unknown {
