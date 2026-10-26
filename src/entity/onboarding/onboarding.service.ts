@@ -417,8 +417,11 @@ export class OnboardingService {
   private userFacing(error: unknown) {
     if (error instanceof AppError) return error;
     if (error instanceof BridgeApiError) {
+      // `source` names the rejected field on 400 invalid_parameters
+      const source = (error.body as { source?: unknown } | undefined)?.source;
       console.error(
-        `[onboarding] Bridge ${error.status} ${error.code ?? ''} ${error.path}: ${error.message}`
+        `[onboarding] Bridge ${error.status} ${error.code ?? ''} ${error.path}: ${error.message}` +
+          (source ? ` source=${JSON.stringify(source)}` : '')
       );
       return new AppError(
         error.retryable
