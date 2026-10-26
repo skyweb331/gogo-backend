@@ -262,7 +262,7 @@ export class PayoutService {
         on_behalf_of: customer.bridgeCustomerId,
         client_reference_id: `nxpay-tx-${tx.id}`,
         source: {
-          payment_rail: source.chain as 'base' | 'solana',
+          payment_rail: 'bridge_wallet' as const,
           currency: stablecoin,
           bridge_wallet_id: source.bridgeWalletId,
         },

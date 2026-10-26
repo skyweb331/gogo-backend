@@ -206,7 +206,7 @@ export interface CreateTransferRequest {
   on_behalf_of: string;
   developer_fee: string;
   client_reference_id?: string;
-  source: { payment_rail: BridgeChain; currency: BridgeStablecoin; bridge_wallet_id: string };
+  source: { payment_rail: 'bridge_wallet'; currency: BridgeStablecoin; bridge_wallet_id: string };
   destination: { payment_rail: BridgeChain; currency: BridgeStablecoin; to_address: string };
 }
 
