@@ -30,6 +30,7 @@
     "@aws-sdk/client-sesv2": "3.1147.0",
     "@prisma/orm-postgres": "8.0.0-rc.14",
     "@sentry/node": "11.4.0",
+    "any-ascii": "0.3.3",
     "bcryptjs": "3.0.3",
     "bs58": "6.0.0",
     "class-validator": "0.15.1",

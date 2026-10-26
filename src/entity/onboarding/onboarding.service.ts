@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Service } from 'typedi';
 import { and, not, or } from '@prisma/orm-postgres/orm-client';
 
@@ -143,7 +144,10 @@ export class OnboardingService {
         type,
         endorsements: ENDORSEMENTS,
         redirectUri: redirectUri(),
-        idempotencyKey: `kyc-link-${customer.id}-${type}`,
+        idempotencyKey: `kyc-link-${customer.id}-${type}-${createHash('sha256')
+          .update(`${user.name}\n${user.email}`)
+          .digest('hex')
+          .slice(0, 16)}`,
       });
     } catch (error) {
       const existing = this.existingKycLink(error);
