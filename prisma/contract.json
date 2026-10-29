@@ -661,13 +661,6 @@
                   "kind": "scalar"
                 }
               },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "onboardedAt": {
                 "nullable": true,
                 "type": {
@@ -892,9 +885,6 @@
                 "kycStatus": {
                   "column": "kycStatus"
                 },
-                "legacyId": {
-                  "column": "legacyId"
-                },
                 "onboardedAt": {
                   "column": "onboardedAt"
                 },
@@ -967,13 +957,6 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -1074,9 +1057,6 @@
                 },
                 "id": {
                   "column": "id"
-                },
-                "legacyId": {
-                  "column": "legacyId"
                 },
                 "notes": {
                   "column": "notes"
@@ -1673,13 +1653,6 @@
                   "kind": "scalar"
                 }
               },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "reference": {
                 "nullable": false,
                 "type": {
@@ -1764,9 +1737,6 @@
                 },
                 "lastMessageAt": {
                   "column": "lastMessageAt"
-                },
-                "legacyId": {
-                  "column": "legacyId"
                 },
                 "reference": {
                   "column": "reference"
@@ -1923,13 +1893,6 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/uuid@1",
-                  "kind": "scalar"
-                }
-              },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -2148,9 +2111,6 @@
                 "id": {
                   "column": "id"
                 },
-                "legacyId": {
-                  "column": "legacyId"
-                },
                 "netAmountInCents": {
                   "column": "netAmountInCents"
                 },
@@ -2330,13 +2290,6 @@
                   "kind": "scalar"
                 }
               },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "name": {
                 "nullable": false,
                 "type": {
@@ -2453,9 +2406,6 @@
                 },
                 "lastLoginAt": {
                   "column": "lastLoginAt"
-                },
-                "legacyId": {
-                  "column": "legacyId"
                 },
                 "name": {
                   "column": "name"
@@ -2735,13 +2685,6 @@
                   "kind": "scalar"
                 }
               },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "status": {
                 "nullable": false,
                 "type": {
@@ -2835,9 +2778,6 @@
                 },
                 "label": {
                   "column": "label"
-                },
-                "legacyId": {
-                  "column": "legacyId"
                 },
                 "status": {
                   "column": "status"
@@ -3055,13 +2995,6 @@
                   "kind": "scalar"
                 }
               },
-              "legacyId": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "objectId": {
                 "nullable": true,
                 "type": {
@@ -3138,9 +3071,6 @@
                 },
                 "id": {
                   "column": "id"
-                },
-                "legacyId": {
-                  "column": "legacyId"
                 },
                 "objectId": {
                   "column": "objectId"
@@ -3464,11 +3394,6 @@
                   "nativeType": "text",
                   "nullable": false
                 },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
                 "onboardedAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "nativeType": "timestamptz",
@@ -3584,11 +3509,6 @@
               "uniques": [
                 {
                   "columns": [
-                    "legacyId"
-                  ]
-                },
-                {
-                  "columns": [
                     "userId"
                   ]
                 },
@@ -3643,11 +3563,6 @@
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
-                },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
                 },
                 "notes": {
                   "codecId": "pg/text@1",
@@ -3720,13 +3635,7 @@
                   "id"
                 ]
               },
-              "uniques": [
-                {
-                  "columns": [
-                    "legacyId"
-                  ]
-                }
-              ]
+              "uniques": []
             },
             "fee_tiers": {
               "columns": {
@@ -4244,11 +4153,6 @@
                   "nullable": true,
                   "typeRef": "Timestamp"
                 },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
                 "reference": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -4323,11 +4227,6 @@
                 ]
               },
               "uniques": [
-                {
-                  "columns": [
-                    "legacyId"
-                  ]
-                },
                 {
                   "columns": [
                     "reference"
@@ -4549,11 +4448,6 @@
                   "nativeType": "uuid",
                   "nullable": false
                 },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
                 "netAmountInCents": {
                   "codecId": "pg/int8@1",
                   "nativeType": "int8",
@@ -4734,11 +4628,6 @@
               "uniques": [
                 {
                   "columns": [
-                    "legacyId"
-                  ]
-                },
-                {
-                  "columns": [
                     "reference"
                   ]
                 },
@@ -4804,11 +4693,6 @@
                   "nullable": true,
                   "typeRef": "Timestamp"
                 },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
                 "name": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
@@ -4862,11 +4746,6 @@
                 ]
               },
               "uniques": [
-                {
-                  "columns": [
-                    "legacyId"
-                  ]
-                },
                 {
                   "columns": [
                     "email"
@@ -5225,11 +5104,6 @@
                   "nativeType": "text",
                   "nullable": true
                 },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
-                },
                 "status": {
                   "codecId": "pg/text@1",
                   "default": {
@@ -5309,11 +5183,6 @@
               "uniques": [
                 {
                   "columns": [
-                    "legacyId"
-                  ]
-                },
-                {
-                  "columns": [
                     "customerId",
                     "chain",
                     "address"
@@ -5368,11 +5237,6 @@
                   "codecId": "pg/uuid@1",
                   "nativeType": "uuid",
                   "nullable": false
-                },
-                "legacyId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
-                  "nullable": true
                 },
                 "objectId": {
                   "codecId": "pg/text@1",
@@ -5452,11 +5316,6 @@
                 ]
               },
               "uniques": [
-                {
-                  "columns": [
-                    "legacyId"
-                  ]
-                },
                 {
                   "columns": [
                     "bridgeEventId"
@@ -5583,7 +5442,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "7d0741b1cb2086c077d35861408d08b1ebe61ae6e84a186961a9c37efe5bd043",
+    "storageHash": "0d7c10eeac2c6ff2294dd684fffd6160a290b48b464939592db20138febda647",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",

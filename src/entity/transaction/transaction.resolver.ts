@@ -62,7 +62,7 @@ export class TransactionResolver {
   @Authorized()
   @Query(() => Transaction, { nullable: true })
   async transaction(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
-    const tx = await this.service.getByIdOrLegacy(id);
+    const tx = await this.service.getById(id);
     assertOwnership(ctx, tx);
     return tx;
   }

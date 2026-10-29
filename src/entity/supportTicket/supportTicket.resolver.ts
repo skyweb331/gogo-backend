@@ -64,7 +64,7 @@ export class SupportTicketResolver {
   @Authorized()
   @Query(() => SupportTicket, { nullable: true })
   async supportTicket(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
-    const ticket = await this.service.getByIdOrLegacy(id);
+    const ticket = await this.service.getById(id);
     assertOwnership(ctx, ticket);
     return ticket;
   }

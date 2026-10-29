@@ -1,0 +1,125 @@
+[
+  {
+    "id": "data.legacy_ids.drop",
+    "label": "Drop legacyId after wallet keys are bound to UUIDs",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "wallet keys no longer depend on legacyId (run npm run legacy:drop first)",
+        "sql": "SELECT (\n              NOT EXISTS (\n                SELECT 1 FROM information_schema.columns\n                WHERE table_schema = 'public' AND table_name = 'wallets' AND column_name = 'legacyId'\n              )\n              OR NOT EXISTS (SELECT 1 FROM \"wallet_keys\")\n              OR EXISTS (\n                SELECT 1 FROM \"app_settings\"\n                WHERE \"key\" = 'legacy-ids-retired' AND \"value\" = 'true'::jsonb\n              )\n            ) AS \"result\""
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop unique users_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"users\" DROP CONSTRAINT IF EXISTS \"users_legacyId_key\""
+      },
+      {
+        "description": "drop users.legacyId",
+        "sql": "ALTER TABLE \"public\".\"users\" DROP COLUMN IF EXISTS \"legacyId\""
+      },
+      {
+        "description": "drop unique customers_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"customers\" DROP CONSTRAINT IF EXISTS \"customers_legacyId_key\""
+      },
+      {
+        "description": "drop customers.legacyId",
+        "sql": "ALTER TABLE \"public\".\"customers\" DROP COLUMN IF EXISTS \"legacyId\""
+      },
+      {
+        "description": "drop unique wallets_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"wallets\" DROP CONSTRAINT IF EXISTS \"wallets_legacyId_key\""
+      },
+      {
+        "description": "drop wallets.legacyId",
+        "sql": "ALTER TABLE \"public\".\"wallets\" DROP COLUMN IF EXISTS \"legacyId\""
+      },
+      {
+        "description": "drop unique transactions_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP CONSTRAINT IF EXISTS \"transactions_legacyId_key\""
+      },
+      {
+        "description": "drop transactions.legacyId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP COLUMN IF EXISTS \"legacyId\""
+      },
+      {
+        "description": "drop unique fee_schedules_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" DROP CONSTRAINT IF EXISTS \"fee_schedules_legacyId_key\""
+      },
+      {
+        "description": "drop fee_schedules.legacyId",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" DROP COLUMN IF EXISTS \"legacyId\""
+      },
+      {
+        "description": "drop unique support_tickets_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" DROP CONSTRAINT IF EXISTS \"support_tickets_legacyId_key\""
+      },
+      {
+        "description": "drop support_tickets.legacyId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" DROP COLUMN IF EXISTS \"legacyId\""
+      },
+      {
+        "description": "drop unique webhook_events_legacyId_key",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" DROP CONSTRAINT IF EXISTS \"webhook_events_legacyId_key\""
+      },
+      {
+        "description": "drop webhook_events.legacyId",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" DROP COLUMN IF EXISTS \"legacyId\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "users.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "users"
+        ]
+      },
+      {
+        "description": "customers.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "customers"
+        ]
+      },
+      {
+        "description": "wallets.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "wallets"
+        ]
+      },
+      {
+        "description": "transactions.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "transactions"
+        ]
+      },
+      {
+        "description": "fee_schedules.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "fee_schedules"
+        ]
+      },
+      {
+        "description": "support_tickets.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "support_tickets"
+        ]
+      },
+      {
+        "description": "webhook_events.legacyId is gone",
+        "sql": "SELECT NOT EXISTS (\n    SELECT 1 FROM information_schema.columns\n    WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'legacyId'\n  ) AS \"result\"",
+        "params": [
+          "webhook_events"
+        ]
+      }
+    ]
+  }
+]

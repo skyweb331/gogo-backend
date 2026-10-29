@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { config } from '#src/config.js';
 
 export interface AccessTokenPayload {
-  /** User UUID; an integer in tokens issued before the UUID switch (see `legacyIdOf`). */
+  /** User UUID. Tokens issued before the UUID switch carry an integer and are rejected. */
   id: string | number;
   /** Bumped when the password changes, invalidating older tokens. */
   pv: number;

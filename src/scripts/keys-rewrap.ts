@@ -42,7 +42,7 @@ async function main() {
       const customer = await prisma.orm.Customer.where({ id: wallet.customerId }).first();
       if (!customer) continue;
       try {
-        const next = vault.rewrap(row, walletKeyAad(wallet, customer));
+        const next = vault.rewrap(row, walletKeyAad(wallet.id, wallet.customerId));
         await prisma.orm.WalletKey.where({
           id: row.id,
           masterKeyVersion: row.masterKeyVersion,

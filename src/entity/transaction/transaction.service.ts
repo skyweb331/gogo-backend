@@ -4,15 +4,11 @@ import { and } from '@prisma/orm-postgres/orm-client';
 import { PrismaService, toJson, type TransactionRow } from '#src/service/prisma.js';
 import { TransactionEventSource, TransactionState } from '#src/graphql/enum.js';
 import { canTransition } from '#src/state/transaction.stateMachine.js';
-import { idOrLegacy } from '#src/utils/id.js';
 
 import type { TransactionQueryArgs } from './transaction.type.js';
 
 export type TransactionPatch = Partial<
-  Omit<
-    TransactionRow,
-    'id' | 'legacyId' | 'reference' | 'customerId' | 'createdAt' | 'updatedAt' | 'version'
-  >
+  Omit<TransactionRow, 'id' | 'reference' | 'customerId' | 'createdAt' | 'updatedAt' | 'version'>
 >;
 
 const TRANSACTION_LIST = {
@@ -63,11 +59,6 @@ export class TransactionService {
 
   async getById(id: string) {
     return this.prisma.orm.Transaction.where({ id }).first();
-  }
-
-  /** Also accepts the integer ids in links from emails sent before the UUID migration. */
-  async getByIdOrLegacy(id: string) {
-    return this.prisma.orm.Transaction.where(idOrLegacy(id)).first();
   }
 
   async getByDepositId(bridgeDepositId: string) {

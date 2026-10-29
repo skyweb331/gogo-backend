@@ -18,7 +18,7 @@ import {
   verifyPassword,
 } from '#src/utils/auth.js';
 import { AppError, UnauthenticatedError } from '#src/utils/errors.js';
-import { idOrLegacy } from '#src/utils/id.js';
+import { isUuid } from '#src/utils/id.js';
 
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { OneTimeCodeService } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
@@ -136,7 +136,8 @@ export class AuthService {
     } catch {
       throw new UnauthenticatedError('Your sign-in session expired. Please sign in again.');
     }
-    const user = await this.prisma.orm.User.where(idOrLegacy(userId)).first();
+    if (!isUuid(userId)) throw new UnauthenticatedError();
+    const user = await this.users.getUserById(userId);
     if (!user || user.deletedAt || !isStaff(user.role)) throw new UnauthenticatedError();
     return user;
   }

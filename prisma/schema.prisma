@@ -112,8 +112,6 @@ enum otp_purpose {
 
 model User {
   id              Uuid               @id @default(uuid(7))
-  // Pre-UUID integer id, kept for tokens and links issued before the switch
-  legacyId        Int?               @unique
   email           String             @unique
   password        String
   name            String
@@ -134,8 +132,6 @@ model User {
 
 model Customer {
   id               Uuid              @id @default(uuid(7))
-  // Pre-UUID integer id: part of the encryption binding of wallet keys sealed before the switch
-  legacyId         Int?              @unique
   userId           Uuid              @unique
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   type             customer_type?
@@ -189,8 +185,6 @@ model OneTimeCode {
 
 model Wallet {
   id            Uuid          @id @default(uuid(7))
-  // Pre-UUID integer id: part of the encryption binding of wallet keys sealed before the switch
-  legacyId      Int?          @unique
   customerId    Uuid
   customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   chain         chain
@@ -289,8 +283,6 @@ model VirtualAccount {
 
 model Transaction {
   id                        Uuid               @id @default(uuid(7))
-  // Pre-UUID integer id: Bridge idempotency keys and client_reference_id, old email links
-  legacyId                  Int?               @unique
   // Shown to customers and quoted to support, e.g. NXP-7K3M9QX2
   reference                 String             @unique
   customerId                Uuid
@@ -367,8 +359,6 @@ model MonthlyVolume {
 
 model FeeSchedule {
   id              Uuid                @id @default(uuid(7))
-  // Pre-UUID integer id, for jobs queued before the switch
-  legacyId        Int?                @unique
   effectivePeriod String
   status          fee_schedule_status @default(Draft)
   notes           String?
@@ -406,8 +396,6 @@ model FeeTier {
 
 model SupportTicket {
   id            Uuid             @id @default(uuid(7))
-  // Pre-UUID integer id, for old email links
-  legacyId      Int?             @unique
   // Shown to customers, e.g. SUP-7K3M9QX2
   reference     String           @unique
   customerId    Uuid
@@ -459,8 +447,6 @@ model AuditLog {
 
 model WebhookEvent {
   id            Uuid                 @id @default(uuid(7))
-  // Pre-UUID integer id, for jobs queued before the switch
-  legacyId      Int?                 @unique
   bridgeEventId String               @unique
   category      String
   type          String

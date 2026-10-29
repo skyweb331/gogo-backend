@@ -144,7 +144,7 @@ export class OnboardingService {
         type,
         endorsements: ENDORSEMENTS,
         redirectUri: redirectUri(),
-        idempotencyKey: `kyc-link-${customer.legacyId ?? customer.id}-${type}-${createHash('sha256')
+        idempotencyKey: `kyc-link-${customer.id}-${type}-${createHash('sha256')
           .update(`${user.name}\n${user.email}`)
           .digest('hex')
           .slice(0, 16)}`,

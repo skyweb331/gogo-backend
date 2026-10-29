@@ -1,26 +1,11 @@
-import { Container } from 'typedi';
-
-import { PrismaService, type Orm } from '#src/service/prisma.js';
-import { legacyIdOf } from '#src/utils/id.js';
-
-const LOOKUP = {
-  Customer: (orm: Orm, legacyId: number) => orm.Customer.where({ legacyId }).first(),
-  Transaction: (orm: Orm, legacyId: number) => orm.Transaction.where({ legacyId }).first(),
-  WebhookEvent: (orm: Orm, legacyId: number) => orm.WebhookEvent.where({ legacyId }).first(),
-  FeeSchedule: (orm: Orm, legacyId: number) => orm.FeeSchedule.where({ legacyId }).first(),
-};
-
 /**
- * Jobs queued before the UUID migration carry integer ids. Returns the row's UUID, or null
- * when no row has that legacy id.
+ * Jobs queued before the UUID switch carry integer ids. Those rows are no longer
+ * addressable, so the job is skipped instead of being applied to the wrong record.
  */
-export const resolveJobId = async (
-  model: keyof typeof LOOKUP,
-  value: string | number
-): Promise<string | null> => {
-  const legacyId = legacyIdOf(value);
-  if (legacyId === null) return String(value);
-  const row = await LOOKUP[model](Container.get(PrismaService).orm, legacyId);
-  if (!row) console.warn(`[jobs] no ${model} with legacy id ${legacyId}`);
-  return row?.id ?? null;
+export const resolveJobId = (model: string, value: string | number): string | null => {
+  if (typeof value === 'number' || /^[1-9]\d{0,9}$/.test(String(value))) {
+    console.warn(`[jobs] skipping ${model} job queued with integer id ${value}`);
+    return null;
+  }
+  return String(value);
 };

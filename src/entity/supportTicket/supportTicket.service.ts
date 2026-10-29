@@ -12,7 +12,6 @@ import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { isStaff } from '#src/authChecker.js';
 import type { Context } from '#src/context.js';
 import { AppError, ForbiddenError, NotFoundError } from '#src/utils/errors.js';
-import { idOrLegacy } from '#src/utils/id.js';
 import { generateReference } from '#src/utils/reference.js';
 
 import type {
@@ -58,11 +57,6 @@ export class SupportTicketService {
 
   async getById(id: string) {
     return this.prisma.orm.SupportTicket.where({ id }).first();
-  }
-
-  /** Also accepts the integer ids in links from emails sent before the UUID migration. */
-  async getByIdOrLegacy(id: string) {
-    return this.prisma.orm.SupportTicket.where(idOrLegacy(id)).first();
   }
 
   async create(user: UserRow, customer: CustomerRow, input: CreateSupportTicketInput) {

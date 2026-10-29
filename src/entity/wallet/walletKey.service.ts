@@ -16,19 +16,12 @@ export class WalletKeyService {
     private readonly vault: KeyVault
   ) {}
 
-  private async aad(wallet: Pick<WalletRow, 'id' | 'legacyId' | 'customerId'>) {
-    const customer =
-      wallet.legacyId === null
-        ? { id: wallet.customerId, legacyId: null }
-        : await this.prisma.orm.Customer.where({ id: wallet.customerId })
-            .select('id', 'legacyId')
-            .first();
-    if (!customer) throw new Error(`Customer of wallet ${wallet.id} not found`);
-    return walletKeyAad(wallet, customer);
+  private aad(wallet: Pick<WalletRow, 'id' | 'customerId'>) {
+    return walletKeyAad(wallet.id, wallet.customerId);
   }
 
   /** Seals and stores the generated key. Run inside the transaction that created the wallet. */
-  async store(wallet: Pick<WalletRow, 'id' | 'legacyId' | 'customerId'>, generated: GeneratedKey) {
+  async store(wallet: Pick<WalletRow, 'id' | 'customerId'>, generated: GeneratedKey) {
     const sealed = this.vault.seal(generated.secret, await this.aad(wallet));
     await this.prisma.orm.WalletKey.create({
       walletId: wallet.id,
@@ -45,7 +38,7 @@ export class WalletKeyService {
 
   /** Decrypts and formats the key for wallet-app import. Callers audit and rate limit. */
   async exportKey(
-    wallet: Pick<WalletRow, 'id' | 'legacyId' | 'customerId' | 'address'>
+    wallet: Pick<WalletRow, 'id' | 'customerId' | 'address'>
   ): Promise<string | null> {
     const row = await this.prisma.orm.WalletKey.where({ walletId: wallet.id }).first();
     if (!row) return null;
