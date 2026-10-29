@@ -2,6 +2,7 @@ import { Service } from 'typedi';
 import { and } from '@prisma/orm-postgres/orm-client';
 
 import {
+  lockKey,
   PrismaService,
   toJson,
   type CustodialWalletRow,
@@ -65,6 +66,14 @@ export class VirtualAccountService {
     return this.prisma.orm.VirtualAccount.where({ bridgeVirtualAccountId }).first();
   }
 
+  /** Currencies that have had a deposit account, including ones staff deactivated. */
+  async openedCurrencies(customerId: string): Promise<Set<FiatCurrency>> {
+    const rows = await this.prisma.orm.VirtualAccount.where({ customerId })
+      .select('sourceCurrency')
+      .all();
+    return new Set(rows.map((r) => r.sourceCurrency as FiatCurrency));
+  }
+
   async activeFor(customerId: string, currency: FiatCurrency) {
     return this.prisma.orm.VirtualAccount.where((v) =>
       and(v.customerId.eq(customerId), v.sourceCurrency.eq(currency), v.deactivatedAt.isNull())
@@ -74,14 +83,15 @@ export class VirtualAccountService {
   /**
    * USD -> USDC and EUR -> EURC accounts into the custodial wallet, 0% Bridge fee.
    * Each currency is independent: EUR needs the `sepa` endorsement, so a failure there
-   * doesn't block USD and is retried on the next onboarding sync.
+   * doesn't block USD and is retried once Bridge approves the endorsement.
    */
   async ensureForCustomer(
     customer: CustomerRow,
-    custodial: CustodialWalletRow
+    custodial: CustodialWalletRow,
+    currencies: FiatCurrency[] = [FiatCurrency.usd, FiatCurrency.eur]
   ): Promise<EnsureResult[]> {
     const results: EnsureResult[] = [];
-    for (const currency of [FiatCurrency.usd, FiatCurrency.eur]) {
+    for (const currency of currencies) {
       try {
         results.push({
           currency,
@@ -99,16 +109,31 @@ export class VirtualAccountService {
   async ensure(customer: CustomerRow, custodial: CustodialWalletRow, currency: FiatCurrency) {
     const existing = await this.activeFor(customer.id, currency);
     if (existing) return existing;
-    if (!customer.bridgeCustomerId)
-      throw new Error(`Customer ${customer.id} has no Bridge customer`);
+    const bridgeCustomerId = customer.bridgeCustomerId;
+    if (!bridgeCustomerId) throw new Error(`Customer ${customer.id} has no Bridge customer`);
 
-    const remote = await this.bridge.virtualAccounts.create({
-      customerId: customer.bridgeCustomerId,
-      sourceCurrency: currency,
-      destinationCurrency: STABLECOIN_FOR[currency],
-      chain: custodial.chain as 'base' | 'solana',
-      bridgeWalletId: custodial.bridgeWalletId,
+    // Bridge replays a reused idempotency key's first response (even a failure) for 24h, so each
+    // attempt gets a fresh key. The lock and the lookup of unsaved Bridge accounts prevent duplicates.
+    const remote = await this.prisma.transaction(async () => {
+      await this.prisma.advisoryXactLock(lockKey(`va:${customer.id}:${currency}`));
+      const saved = await this.activeFor(customer.id, currency);
+      if (saved) return null;
+      const { data } = await this.bridge.virtualAccounts.list(bridgeCustomerId);
+      const unsaved = data.find(
+        (va) =>
+          va.source_deposit_instructions?.currency === currency &&
+          va.status !== VirtualAccountStatus.deactivated
+      );
+      if (unsaved && !(await this.getByBridgeId(unsaved.id))) return unsaved;
+      return this.bridge.virtualAccounts.create({
+        customerId: bridgeCustomerId,
+        sourceCurrency: currency,
+        destinationCurrency: STABLECOIN_FOR[currency],
+        chain: custodial.chain as 'base' | 'solana',
+        bridgeWalletId: custodial.bridgeWalletId,
+      });
     });
+    if (!remote) return (await this.activeFor(customer.id, currency))!;
     try {
       return await this.prisma.orm.VirtualAccount.create(
         this.rowFromRemote(customer.id, custodial, currency, remote)

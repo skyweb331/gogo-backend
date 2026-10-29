@@ -2,7 +2,7 @@ import type { JobDefinition } from '#src/service/queue.js';
 
 import { processWebhookEvent, sweepWebhookEvents } from './webhook.jobs.js';
 import { pollVirtualAccountActivity } from './bridgePoll.jobs.js';
-import { completeOnboarding, syncKycStatus } from './onboarding.jobs.js';
+import { completeOnboarding, syncDepositAccounts, syncKycStatus } from './onboarding.jobs.js';
 import { feeScheduleRollover, notifyFeeSchedule } from './fee.jobs.js';
 import {
   createPayout,
@@ -25,6 +25,7 @@ export const jobs: JobDefinition<any>[] = [
   pollVirtualAccountActivity,
   completeOnboarding,
   syncKycStatus,
+  syncDepositAccounts,
   feeScheduleRollover,
   notifyFeeSchedule,
 ];

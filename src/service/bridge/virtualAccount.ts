@@ -44,7 +44,7 @@ export class BridgeVirtualAccountsApi {
         },
         developer_fee_percent: '0',
       },
-      { idempotencyKey: `va-${input.customerId}-${input.sourceCurrency}` }
+      { idempotencyKey: `va-${input.customerId}-${input.sourceCurrency}-${crypto.randomUUID()}` }
     );
   }
 

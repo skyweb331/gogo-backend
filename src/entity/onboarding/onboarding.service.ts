@@ -28,7 +28,10 @@ import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { CustomerService } from '#src/entity/customer/customer.service.js';
 import { WalletService } from '#src/entity/wallet/wallet.service.js';
 import { CustodialWalletService } from '#src/entity/custodialWallet/custodialWallet.service.js';
-import { VirtualAccountService } from '#src/entity/virtualAccount/virtualAccount.service.js';
+import {
+  VirtualAccountService,
+  type EnsureResult,
+} from '#src/entity/virtualAccount/virtualAccount.service.js';
 import type { WebhookOutcome } from '#src/webhook/dispatcher.js';
 import { AppError } from '#src/utils/errors.js';
 import type { Context } from '#src/context.js';
@@ -39,6 +42,11 @@ export const COMPLETE_ONBOARDING = 'complete-onboarding';
 
 /** `base` covers USD (ACH/wire); `sepa` covers EUR. */
 const ENDORSEMENTS = ['base', 'sepa'];
+const CURRENCIES = [FiatCurrency.usd, FiatCurrency.eur];
+const ENDORSEMENT_FOR: Record<FiatCurrency, string> = {
+  [FiatCurrency.usd]: 'base',
+  [FiatCurrency.eur]: 'sepa',
+};
 
 const KYC_IN_PROGRESS = new Set<string>([
   KycStatus.not_started,
@@ -242,15 +250,20 @@ export class OnboardingService {
     await this.wallets.ensureGeneratedWallets(customer);
     customer = (await this.customers.getById(customerId))!;
 
+    // Once active, only fill currencies that never had an account so staff deactivations stick
+    const currencies =
+      customer.status === CustomerStatus.Active
+        ? await this.unopenedCurrencies(customer.id)
+        : undefined;
     let results;
     try {
       const custodial = await this.custodial.ensure(customer);
-      results = await this.virtualAccounts.ensureForCustomer(customer, custodial);
+      results = await this.virtualAccounts.ensureForCustomer(customer, custodial, currencies);
     } catch (error) {
       throw this.userFacing(error);
     }
     const ready = results.filter((r) => r.virtualAccount);
-    if (ready.length === 0) {
+    if (results.length > 0 && ready.length === 0) {
       throw new AppError('We could not open your deposit accounts yet. Please try again shortly.');
     }
 
@@ -311,7 +324,10 @@ export class OnboardingService {
     };
     const updated = await this.transition(customer, next);
     // New endorsements (e.g. `sepa`) can unlock a currency that failed during onboarding
-    if (updated.status === CustomerStatus.Active) {
+    if (
+      updated.status === CustomerStatus.Active &&
+      (await this.missingCurrencies(updated)).length > 0
+    ) {
       await this.queue.sendSafe(
         COMPLETE_ONBOARDING,
         { customerId: updated.id },
@@ -412,7 +428,79 @@ export class OnboardingService {
     return { refreshed, finalized };
   }
 
+  /**
+   * Active customers without an account in every currency. Re-reading them from Bridge
+   * picks up endorsements approved after onboarding even if the webhook was missed or its
+   * job was dropped while onboarding was still running.
+   */
+  async syncDepositAccounts() {
+    if (!this.bridge.configured) return 0;
+    const opened = await this.prisma.orm.VirtualAccount.select(
+      'customerId',
+      'sourceCurrency'
+    ).all();
+    const counts = new Map<string, number>();
+    for (const row of opened) counts.set(row.customerId, (counts.get(row.customerId) ?? 0) + 1);
+    const complete = new Set(
+      [...counts].filter(([, n]) => n >= CURRENCIES.length).map(([id]) => id)
+    );
+
+    const active = await this.prisma.orm.Customer.where((c) =>
+      and(c.status.eq(CustomerStatus.Active), c.bridgeCustomerId.isNotNull())
+    )
+      .orderBy((c) => c.updatedAt.asc())
+      .all();
+
+    let checked = 0;
+    for (const customer of active) {
+      if (complete.has(customer.id)) continue;
+      if (checked >= 100) break;
+      checked++;
+      try {
+        const remote = await this.bridge.customers.get(customer.bridgeCustomerId!);
+        await this.applyBridgeCustomer(customer, remote);
+      } catch (error) {
+        console.warn(`[onboarding] deposit sync ${customer.id}: ${(error as Error).message}`);
+      }
+    }
+    return checked;
+  }
+
+  /** Staff retry: re-reads Bridge, then tries every currency that never had an account. */
+  async retryDepositAccounts(customer: CustomerRow): Promise<EnsureResult[]> {
+    this.assertBridge();
+    if (customer.status !== CustomerStatus.Active || !customer.bridgeCustomerId)
+      throw new AppError('Deposit accounts are opened after onboarding completes');
+    try {
+      const remote = await this.bridge.customers.get(customer.bridgeCustomerId);
+      customer = await this.applyBridgeCustomer(customer, remote);
+      const currencies = await this.unopenedCurrencies(customer.id);
+      if (currencies.length === 0) return [];
+      const custodial = await this.custodial.ensure(customer);
+      return await this.virtualAccounts.ensureForCustomer(customer, custodial, currencies);
+    } catch (error) {
+      throw this.userFacing(error);
+    }
+  }
+
   // Helpers
+
+  private async unopenedCurrencies(customerId: string) {
+    const opened = await this.virtualAccounts.openedCurrencies(customerId);
+    return CURRENCIES.filter((c) => !opened.has(c));
+  }
+
+  /** Never-opened currencies whose Bridge endorsement is approved. */
+  private async missingCurrencies(customer: CustomerRow) {
+    const endorsements = Array.isArray(customer.endorsements)
+      ? (customer.endorsements as { name?: string; status?: string }[])
+      : [];
+    const approved = new Set(
+      endorsements.filter((e) => e.status === 'approved').map((e) => e.name)
+    );
+    const unopened = await this.unopenedCurrencies(customer.id);
+    return unopened.filter((c) => approved.has(ENDORSEMENT_FOR[c]));
+  }
 
   private assertBridge() {
     if (!this.bridge.configured) {

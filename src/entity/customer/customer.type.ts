@@ -3,6 +3,7 @@ import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
+import { FiatCurrency } from '#src/graphql/enum.js';
 
 import { Customer } from './customer.entity.js';
 
@@ -28,4 +29,19 @@ export class SuspendCustomerInput {
   @Field(() => String)
   @MaxLength(500)
   reason: string;
+}
+
+@ObjectType({ description: 'Outcome of opening one missing deposit account' })
+export class DepositAccountResult {
+  @Field(() => FiatCurrency)
+  currency: FiatCurrency;
+
+  @Field(() => Boolean)
+  opened: boolean;
+
+  @Field(() => String, {
+    nullable: true,
+    description: 'Bridge error when the account could not be opened',
+  })
+  error?: string | null;
 }

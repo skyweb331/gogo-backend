@@ -14,6 +14,16 @@ export const completeOnboarding = defineJob<{ customerId: string }>({
   },
 });
 
+export const syncDepositAccounts = defineJob({
+  name: 'sync-deposit-accounts',
+  queue: { policy: 'exclusive', retryLimit: 0, expireInSeconds: 900 },
+  cron: '17 * * * *',
+  handler: async () => {
+    const checked = await Container.get(OnboardingService).syncDepositAccounts();
+    if (checked) console.info(`[jobs] deposit account sync: checked ${checked}`);
+  },
+});
+
 export const syncKycStatus = defineJob({
   name: 'sync-kyc-status',
   queue: { policy: 'exclusive', retryLimit: 0, expireInSeconds: 600 },

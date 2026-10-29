@@ -26,7 +26,12 @@ import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { NotFoundError } from '#src/utils/errors.js';
 
 import { Customer } from './customer.entity.js';
-import { CustomerQueryArgs, CustomersResponse, SuspendCustomerInput } from './customer.type.js';
+import {
+  CustomerQueryArgs,
+  CustomersResponse,
+  DepositAccountResult,
+  SuspendCustomerInput,
+} from './customer.type.js';
 import { CustomerService } from './customer.service.js';
 
 @Service()
@@ -85,6 +90,35 @@ export class CustomerResolver {
       entityId: id,
     });
     return updated;
+  }
+
+  /** Opens deposit accounts in currencies the customer never had (e.g. EUR after `sepa` approval). */
+  @Authorized([UserRole.Admin])
+  @Mutation(() => [DepositAccountResult])
+  async openMissingDepositAccounts(
+    @Arg('id', () => ID) id: string,
+    @Ctx() ctx: Context
+  ): Promise<DepositAccountResult[]> {
+    const customer = await this.service.getById(id);
+    if (!customer) throw new NotFoundError('Customer');
+    const results = await this.onboarding.retryDepositAccounts(customer);
+    await this.audit.log(ctx, {
+      action: 'customer.deposit_accounts_retry',
+      entity: 'Customer',
+      entityId: id,
+      after: {
+        results: results.map((r) => ({
+          currency: r.currency,
+          opened: !!r.virtualAccount,
+          error: r.error,
+        })),
+      },
+    });
+    return results.map((r) => ({
+      currency: r.currency,
+      opened: !!r.virtualAccount,
+      error: r.error ?? null,
+    }));
   }
 
   @FieldResolver(() => User, { nullable: true })

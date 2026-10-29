@@ -165,6 +165,15 @@ A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `dat
 """
 scalar DateTimeISO
 
+"""Outcome of opening one missing deposit account"""
+type DepositAccountResult {
+  currency: FiatCurrency!
+
+  """Bridge error when the account could not be opened"""
+  error: String
+  opened: Boolean!
+}
+
 type DepositInstructions {
   accountHolderName: String
   accountNumber: String
@@ -409,6 +418,7 @@ type Mutation {
   enableTwoFactor(data: TwoFactorCodeInput!): BackupCodes!
   exportWalletKey(data: WalletReauthInput!): ExportedWalletKey!
   login(data: LoginInput!): LoginResponse!
+  openMissingDepositAccounts(id: ID!): [DepositAccountResult!]!
   publishFeeSchedule(data: PublishFeeScheduleInput!): FeeSchedule!
   reactivateCustomer(id: ID!): Customer!
   refreshKycStatus: OnboardingStatus!
