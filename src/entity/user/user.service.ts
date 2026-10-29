@@ -77,6 +77,7 @@ export class UserService {
         | 'totpSecret'
         | 'totpEnabled'
         | 'totpBackupCodes'
+        | 'approvedAt'
         | 'lastLoginAt'
         | 'deletedAt'
       >

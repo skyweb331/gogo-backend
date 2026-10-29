@@ -77,6 +77,12 @@ export class CustomerResolver {
     return this.service.reactivate(id, ctx);
   }
 
+  @Authorized([UserRole.Support])
+  @Mutation(() => Customer)
+  async approveCustomer(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
+    return this.service.approve(id, ctx);
+  }
+
   /** New hosted Bridge KYC link for support to send when the old one expired. */
   @Authorized([UserRole.Support])
   @Mutation(() => Customer)

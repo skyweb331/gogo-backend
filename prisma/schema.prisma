@@ -121,6 +121,8 @@ model User {
   totpEnabled     Boolean            @default(false)
   // SHA-256 hashes of unused backup codes
   totpBackupCodes Jsonb?
+  // Customers cannot sign in until staff approve the sign-up
+  approvedAt      Timestamp?
   lastLoginAt     Timestamp?
   deletedAt       Timestamp?
   createdAt       Timestamp          @default(now())

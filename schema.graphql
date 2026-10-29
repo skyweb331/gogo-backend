@@ -377,6 +377,7 @@ input LoginInput {
 
 type LoginResponse {
   accessToken: String
+  approvalRequired: Boolean
   mfaRequired: Boolean!
   mfaToken: String
   totpSetupRequired: Boolean!
@@ -402,6 +403,7 @@ type MonthlyVolumesResponse {
 
 type Mutation {
   addExternalWallet(data: AddExternalWalletInput!): Wallet!
+  approveCustomer(id: ID!): Customer!
   archiveExternalWallet(data: WalletReauthInput!): Wallet!
   beginTotpSetup(mfaToken: String!): TotpSetup!
   beginTwoFactorSetup(data: BeginTwoFactorSetupInput!): TotpSetup!
@@ -507,6 +509,8 @@ type Query {
   currentFeeSchedule: FeeSchedule!
   customer(id: ID!): Customer
   customers(
+    """Only sign-ups staff have not approved"""
+    awaitingApproval: Boolean
     filter: JSONObject
     page: String
 
@@ -786,6 +790,8 @@ input UpdateWalletLabelInput {
 }
 
 type User implements Entity & TimeStamp {
+  approvedAt: DateTimeISO
+
   """Unused backup codes; only for the signed-in user"""
   backupCodesRemaining: Int
   createdAt: DateTimeISO

@@ -38,8 +38,13 @@ export const context = async ({ req, res }: { req: Request; res: Response }): Pr
       const row = isUuid(payload.id)
         ? await prisma.orm.User.where({ id: payload.id }).first()
         : null;
-      // Tokens die with the account or a password change
-      if (row && !row.deletedAt && passwordVersion(row.password) === payload.pv) {
+      // Tokens die with the account or a password change; customers also need approval
+      if (
+        row &&
+        !row.deletedAt &&
+        passwordVersion(row.password) === payload.pv &&
+        (row.role !== UserRole.Customer || row.approvedAt)
+      ) {
         user = row;
         mfa = payload.mfa === true;
         if (row.role === UserRole.Customer) {

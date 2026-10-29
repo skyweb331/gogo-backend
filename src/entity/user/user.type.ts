@@ -76,6 +76,10 @@ export class LoginResponse {
   @Field(() => Boolean)
   totpSetupRequired: boolean = false;
 
+  /** New customer sign-up: no token until staff approve the account */
+  @Field(() => Boolean, { nullable: true })
+  approvalRequired?: boolean;
+
   /** Short-lived token for the TOTP step */
   @Field(() => String, { nullable: true })
   mfaToken?: string;

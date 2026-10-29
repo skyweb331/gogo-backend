@@ -1,0 +1,7 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p Your NxPay account has been approved. You can now sign in and finish setting up your account.
+  +button(link, 'Sign in')

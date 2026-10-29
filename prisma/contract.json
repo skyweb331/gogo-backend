@@ -2248,6 +2248,13 @@
           },
           "User": {
             "fields": {
+              "approvedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2396,6 +2403,9 @@
             },
             "storage": {
               "fields": {
+                "approvedAt": {
+                  "column": "approvedAt"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -4662,6 +4672,12 @@
                 }
               ],
               "columns": {
+                "approvedAt": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true,
+                  "typeRef": "Timestamp"
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "default": {
@@ -5457,7 +5473,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "20d98f4734d9bc1c65c7605e1bc02ba8dcd48e231daae04e0d55542cb3846ce6",
+    "storageHash": "e42e77210363488fd60067b61fc9eeabd25ed2fa8566223b21743d95e9e1063e",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",

@@ -16,6 +16,7 @@ const loadLogo = () => (logoPng ??= fs.readFile(path.join(TEMPLATE_DIR, 'assets/
 
 export type EmailTemplate =
   | 'verify-email'
+  | 'customer-approved'
   | 'password-reset'
   | 'staff-invite'
   | 'otp'

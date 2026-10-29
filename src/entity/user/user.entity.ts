@@ -24,6 +24,10 @@ export class User extends Entity {
   @Field(() => Boolean)
   totpEnabled: boolean;
 
+  /** Customers can't sign in until staff approve the sign-up */
+  @Field(() => Date, { nullable: true })
+  approvedAt?: Date | null;
+
   @Field(() => Date, { nullable: true })
   lastLoginAt?: Date | null;
 

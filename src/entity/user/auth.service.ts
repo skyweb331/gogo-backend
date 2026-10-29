@@ -85,12 +85,33 @@ export class AuthService {
       return user;
     });
 
-    if (!user.isEmailVerified) await this.sendVerificationEmail(user);
     await this.audit.log(
       { user, ip: ctx.ip },
       { action: 'user.signUp', entity: 'User', entityId: user.id }
     );
 
+    // The verification code is sent on the first sign-in after approval, while it's still valid
+    return { mfaRequired: false, totpSetupRequired: false, approvalRequired: true };
+  }
+
+  private assertApproved(user: UserRow) {
+    if (!isStaff(user.role) && !user.approvedAt) {
+      throw new AppError(
+        "Your account is waiting for approval. We'll email you as soon as it's ready.",
+        { code: 'APPROVAL_PENDING' }
+      );
+    }
+  }
+
+  private async customerSignedIn(user: UserRow) {
+    await this.users.updateUser(user.id, { lastLoginAt: new Date() });
+    if (!user.isEmailVerified) {
+      try {
+        await this.resendVerification(user);
+      } catch {
+        // Rate limited: the verify page can resend later
+      }
+    }
     return {
       accessToken: this.issueAccessToken(user),
       mfaRequired: false,
@@ -114,6 +135,7 @@ export class AuthService {
     }
 
     this.limiter.reset(`login:email:${normalized}`);
+    this.assertApproved(user);
 
     if (isStaff(user.role)) {
       return {
@@ -131,12 +153,7 @@ export class AuthService {
       };
     }
 
-    await this.users.updateUser(user.id, { lastLoginAt: new Date() });
-    return {
-      accessToken: this.issueAccessToken(user),
-      mfaRequired: false,
-      totpSetupRequired: false,
-    };
+    return this.customerSignedIn(user);
   }
 
   private async userFromMfaToken(mfaToken: string, staff = true) {
@@ -161,23 +178,19 @@ export class AuthService {
     const user = await this.userFromMfaToken(mfaToken, false);
     this.limiter.consume(`totp:${user.id}`, 6, 5 * MINUTE);
     if (!user.totpEnabled) throw new UnauthenticatedError();
+    this.assertApproved(user);
 
     const factor = await this.twoFactor.verify(user, code);
     if (!factor) throw new AppError('Invalid authentication code', { field: 'code' });
 
     this.limiter.reset(`totp:${user.id}`);
-    await this.users.updateUser(user.id, { lastLoginAt: new Date() });
     if (factor === 'backup') {
       await this.audit.log(
         { user, ip: ctx.ip },
         { action: 'user.loginWithBackupCode', entity: 'User', entityId: user.id }
       );
     }
-    return {
-      accessToken: this.issueAccessToken(user),
-      mfaRequired: false,
-      totpSetupRequired: false,
-    };
+    return this.customerSignedIn(user);
   }
 
   async verifyAdminTotp(mfaToken: string, code: string, ctx: Context): Promise<LoginResponse> {

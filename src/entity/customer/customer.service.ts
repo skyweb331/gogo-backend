@@ -3,7 +3,8 @@ import { or } from '@prisma/orm-postgres/orm-client';
 
 import { PrismaService, type CustomerRow } from '#src/service/prisma.js';
 import { config } from '#src/config.js';
-import { CustomerStatus } from '#src/graphql/enum.js';
+import { CustomerStatus, UserRole } from '#src/graphql/enum.js';
+import { MailerService } from '#src/service/mailer.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { AppError, NotFoundError } from '#src/utils/errors.js';
 import { isUuid } from '#src/utils/id.js';
@@ -56,11 +57,26 @@ export function assertSupportedGeography(country: string, region?: string | null
 export class CustomerService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly audit: AuditLogService
+    private readonly audit: AuditLogService,
+    private readonly mailer: MailerService
   ) {}
 
   private async searchCollection(query: CustomerQueryArgs) {
     let collection = this.prisma.orm.Customer;
+    if (query.awaitingApproval) {
+      const pending = await this.prisma.orm.User.where({
+        role: UserRole.Customer,
+        approvedAt: null,
+        deletedAt: null,
+      })
+        .select('id')
+        .limit(500)
+        .all();
+      const ids = pending.map((u) => u.id);
+      collection = collection.where((c) =>
+        ids.length ? c.userId.in(ids) : c.id.isNull()
+      ) as typeof collection;
+    }
     const term = query.search?.trim();
     if (isUuid(term)) {
       collection = collection.where((c) => c.id.eq(term)) as typeof collection;
@@ -154,5 +170,23 @@ export class CustomerService {
       after: { status },
     });
     return updated;
+  }
+
+  /** Lets a new sign-up sign in and emails them the sign-in link. */
+  async approve(id: string, ctx: Context) {
+    const customer = await this.getById(id);
+    if (!customer) throw new NotFoundError('Customer');
+    const user = await this.prisma.orm.User.where({ id: customer.userId }).first();
+    if (!user || user.approvedAt) return customer;
+
+    await this.prisma.orm.User.where({ id: user.id }).update({ approvedAt: new Date() });
+    this.mailer.sendSafe({
+      to: user.email,
+      subject: 'Your NxPay account is approved',
+      template: 'customer-approved',
+      locals: { name: user.name, link: `${config.FRONTEND_URL}/auth/sign-in` },
+    });
+    await this.audit.log(ctx, { action: 'customer.approve', entity: 'Customer', entityId: id });
+    return customer;
   }
 }

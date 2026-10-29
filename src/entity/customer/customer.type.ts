@@ -13,6 +13,10 @@ export class CustomerQueryArgs extends QueryArgsBase {
   @IsOptional()
   @MaxLength(120)
   search?: string;
+
+  @Field(() => Boolean, { nullable: true, description: 'Only sign-ups staff have not approved' })
+  @IsOptional()
+  awaitingApproval?: boolean;
 }
 
 @ObjectType()
