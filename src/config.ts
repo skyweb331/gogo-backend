@@ -40,6 +40,19 @@ const schema = z.object({
   BRIDGE_POLL_INTERVAL_MINUTES: z.coerce.number().int().positive().default(2),
   BRIDGE_MIN_TRANSFER_IN_CENTS: z.coerce.bigint().default(100n),
   BRIDGE_LOG_BODIES: bool,
+  /** Deposit account currencies to open. EUR needs Bridge to enable SEPA on the developer account. */
+  ENABLED_CURRENCIES: z
+    .string()
+    .default('usd,eur')
+    .transform((v) => [
+      ...new Set(
+        v
+          .split(',')
+          .map((c) => c.trim().toLowerCase())
+          .filter(Boolean)
+      ),
+    ])
+    .pipe(z.array(z.enum(['usd', 'eur'])).min(1)),
 
   JOBS_ENABLED: z
     .string()

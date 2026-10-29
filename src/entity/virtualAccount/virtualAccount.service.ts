@@ -9,6 +9,7 @@ import {
   type CustomerRow,
   type VirtualAccountRow,
 } from '#src/service/prisma.js';
+import { config } from '#src/config.js';
 import { BridgeService, type BridgeVirtualAccount } from '#src/service/bridge/index.js';
 import {
   FiatCurrency,
@@ -88,7 +89,7 @@ export class VirtualAccountService {
   async ensureForCustomer(
     customer: CustomerRow,
     custodial: CustodialWalletRow,
-    currencies: FiatCurrency[] = [FiatCurrency.usd, FiatCurrency.eur]
+    currencies = config.ENABLED_CURRENCIES as FiatCurrency[]
   ): Promise<EnsureResult[]> {
     const results: EnsureResult[] = [];
     for (const currency of currencies) {

@@ -42,7 +42,7 @@ export const COMPLETE_ONBOARDING = 'complete-onboarding';
 
 /** `base` covers USD (ACH/wire); `sepa` covers EUR. */
 const ENDORSEMENTS = ['base', 'sepa'];
-const CURRENCIES = [FiatCurrency.usd, FiatCurrency.eur];
+const CURRENCIES = config.ENABLED_CURRENCIES as FiatCurrency[];
 const ENDORSEMENT_FOR: Record<FiatCurrency, string> = {
   [FiatCurrency.usd]: 'base',
   [FiatCurrency.eur]: 'sepa',
