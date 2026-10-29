@@ -1,4 +1,4 @@
-import { ArgsType, Field, Int, ObjectType } from 'type-graphql';
+import { ArgsType, Field, ID, ObjectType } from 'type-graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
@@ -6,11 +6,11 @@ import { QueryArgsBase } from '#src/graphql/queryArgs.js';
 
 @ObjectType()
 export class AuditLog {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
-  @Field(() => Int, { nullable: true })
-  actorId?: number | null;
+  @Field(() => ID, { nullable: true })
+  actorId?: string | null;
 
   @Field(() => String, { nullable: true })
   actorRole?: string | null;

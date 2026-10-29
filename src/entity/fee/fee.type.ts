@@ -1,5 +1,5 @@
 import { IsBoolean, IsInt, IsOptional, MaxLength } from 'class-validator';
-import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { ArgsType, Field, ID, InputType, Int, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
@@ -48,8 +48,8 @@ export class CreateFeeScheduleDraftInput {
 
 @InputType()
 export class UpdateFeeScheduleDraftInput {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
@@ -72,8 +72,8 @@ export class UpdateFeeScheduleDraftInput {
 
 @InputType()
 export class PublishFeeScheduleInput {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => String)
   effectivePeriod: string;

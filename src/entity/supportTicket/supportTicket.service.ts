@@ -12,6 +12,8 @@ import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { isStaff } from '#src/authChecker.js';
 import type { Context } from '#src/context.js';
 import { AppError, ForbiddenError, NotFoundError } from '#src/utils/errors.js';
+import { idOrLegacy } from '#src/utils/id.js';
+import { generateReference } from '#src/utils/reference.js';
 
 import type {
   CreateSupportTicketInput,
@@ -21,8 +23,17 @@ import type {
 
 const TICKET_LIST = {
   model: 'SupportTicket',
-  filterable: ['id', 'customerId', 'status', 'assigneeId', 'subject', 'createdAt', 'lastMessageAt'],
-  sortable: ['id', 'createdAt', 'lastMessageAt', 'status'],
+  filterable: [
+    'id',
+    'reference',
+    'customerId',
+    'status',
+    'assigneeId',
+    'subject',
+    'createdAt',
+    'lastMessageAt',
+  ],
+  sortable: ['createdAt', 'lastMessageAt', 'status'],
   defaultSort: 'lastMessageAt',
 } as const;
 
@@ -45,14 +56,20 @@ export class SupportTicketService {
     return Number(total);
   }
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.SupportTicket.where({ id }).first();
+  }
+
+  /** Also accepts the integer ids in links from emails sent before the UUID migration. */
+  async getByIdOrLegacy(id: string) {
+    return this.prisma.orm.SupportTicket.where(idOrLegacy(id)).first();
   }
 
   async create(user: UserRow, customer: CustomerRow, input: CreateSupportTicketInput) {
     const now = new Date();
     const ticket = await this.prisma.transaction(async () => {
       const created = await this.prisma.orm.SupportTicket.create({
+        reference: generateReference('SUP'),
         customerId: customer.id,
         subject: input.subject.trim(),
         status: TicketStatus.Open,
@@ -66,13 +83,13 @@ export class SupportTicketService {
       });
       return created;
     });
-    this.mailer.opsAlert(`New support ticket #${ticket.id}`, [
+    this.mailer.opsAlert(`New support ticket ${ticket.reference}`, [
       `${user.name} <${user.email}>: ${ticket.subject}`,
     ]);
     return ticket;
   }
 
-  async reply(user: UserRow, ticketId: number, body: string, ctx: Context) {
+  async reply(user: UserRow, ticketId: string, body: string, ctx: Context) {
     const ticket = await this.getById(ticketId);
     if (!ticket) throw new NotFoundError('Ticket not found');
     const staff = isStaff(user.role);
@@ -150,7 +167,7 @@ export class SupportTicketService {
   }
 
   /** Customers close their own tickets. */
-  async close(ticketId: number, ctx: Context) {
+  async close(ticketId: string, ctx: Context) {
     const ticket = await this.getById(ticketId);
     if (!ticket) throw new NotFoundError('Ticket not found');
     if (ctx.customer?.id !== ticket.customerId) throw new ForbiddenError('Not allowed');

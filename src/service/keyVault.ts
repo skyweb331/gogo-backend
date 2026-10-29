@@ -23,8 +23,14 @@ export type WrappedDataKey = Pick<
   'wrappedDataKey' | 'dataKeyIv' | 'dataKeyAuthTag' | 'masterKeyVersion'
 >;
 
-export const walletKeyAad = (walletId: number, customerId: number) =>
-  `customer-wallet-key|${walletId}|${customerId}`;
+type AadOwner = { id: string; legacyId: number | null };
+
+/** Keys sealed before the UUID switch stay bound to the integer ids they were sealed with. */
+export const walletKeyAad = (wallet: AadOwner, customer: AadOwner) => {
+  if (wallet.legacyId === null) return `customer-wallet-key|${wallet.id}|${customer.id}`;
+  if (customer.legacyId === null) throw new Error(`Wallet ${wallet.id} has no legacy customer id`);
+  return `customer-wallet-key|${wallet.legacyId}|${customer.legacyId}`;
+};
 const canaryAad = (version: string) => `keyvault-canary|${version}`;
 
 function parseMasterKeys(source: string, origin: string): Map<string, Buffer> {

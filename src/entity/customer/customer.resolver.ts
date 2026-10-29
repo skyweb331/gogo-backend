@@ -6,7 +6,7 @@ import {
   Ctx,
   FieldResolver,
   Info,
-  Int,
+  ID,
   Mutation,
   Query,
   Resolver,
@@ -54,7 +54,7 @@ export class CustomerResolver {
 
   @Authorized()
   @Query(() => Customer, { nullable: true })
-  async customer(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async customer(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     const customer = await this.service.getById(id);
     assertOwnership(ctx, customer ? { customerId: customer.id } : null);
     return customer;
@@ -68,14 +68,14 @@ export class CustomerResolver {
 
   @Authorized([UserRole.Admin])
   @Mutation(() => Customer)
-  async reactivateCustomer(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async reactivateCustomer(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     return this.service.reactivate(id, ctx);
   }
 
   /** New hosted Bridge KYC link for support to send when the old one expired. */
   @Authorized([UserRole.Support])
   @Mutation(() => Customer)
-  async regenerateCustomerKycLink(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async regenerateCustomerKycLink(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     const customer = await this.service.getById(id);
     if (!customer) throw new NotFoundError('Customer');
     const updated = await this.onboarding.regenerateKycLink(customer);

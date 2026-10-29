@@ -6,7 +6,7 @@ import {
   Ctx,
   FieldResolver,
   Info,
-  Int,
+  ID,
   Mutation,
   Query,
   Resolver,
@@ -63,8 +63,8 @@ export class SupportTicketResolver {
 
   @Authorized()
   @Query(() => SupportTicket, { nullable: true })
-  async supportTicket(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
-    const ticket = await this.service.getById(id);
+  async supportTicket(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
+    const ticket = await this.service.getByIdOrLegacy(id);
     assertOwnership(ctx, ticket);
     return ticket;
   }
@@ -87,7 +87,7 @@ export class SupportTicketResolver {
   @Authorized([UserRole.Customer])
   @UseMiddleware(RequireCustomer)
   @Mutation(() => SupportTicket)
-  async closeSupportTicket(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async closeSupportTicket(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     return this.service.close(id, ctx);
   }
 

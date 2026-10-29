@@ -8,7 +8,7 @@ import type { AuditLogQueryArgs } from './auditLog.type.js';
 export interface AuditEntry {
   action: string;
   entity: string;
-  entityId?: number | string | null;
+  entityId?: string | null;
   before?: unknown;
   after?: unknown;
 }
@@ -42,8 +42,7 @@ export class AuditLogService {
       actorRole: ctx?.user?.role ?? 'system',
       action: entry.action,
       entity: entry.entity,
-      entityId:
-        entry.entityId === undefined || entry.entityId === null ? null : String(entry.entityId),
+      entityId: entry.entityId ?? null,
       before: toJson(entry.before),
       after: toJson(entry.after),
       ip: ctx?.ip ?? null,

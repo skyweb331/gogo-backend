@@ -10,7 +10,7 @@ import {
   Ctx,
   Root,
   Info,
-  Int,
+  ID,
 } from 'type-graphql';
 import graphqlFields from 'graphql-fields';
 import type { GraphQLResolveInfo } from 'graphql';
@@ -177,7 +177,7 @@ export class UserResolver {
 
   @Authorized([UserRole.Admin])
   @Mutation(() => User)
-  async resetStaffTotp(@Arg('id', () => Int) id: number, @Ctx() ctx: Context): Promise<User> {
+  async resetStaffTotp(@Arg('id', () => ID) id: string, @Ctx() ctx: Context): Promise<User> {
     return this.auth.resetStaffTotp(id, ctx);
   }
 }

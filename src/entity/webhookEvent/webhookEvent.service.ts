@@ -74,12 +74,12 @@ export class WebhookEventService {
     }
   }
 
-  enqueue(id: number) {
+  enqueue(id: string) {
     return this.queue.sendSafe(PROCESS_WEBHOOK_EVENT, { id }, { singletonKey: `webhook-${id}` });
   }
 
   /** Runs the owning module's handler; throws on failure so pg-boss retries. */
-  async process(id: number) {
+  async process(id: string) {
     const record = await this.prisma.orm.WebhookEvent.where({ id }).first();
     if (!record) return;
     if (
@@ -130,7 +130,7 @@ export class WebhookEventService {
     return rows.length;
   }
 
-  async replay(id: number, ctx: Context) {
+  async replay(id: string, ctx: Context) {
     const record = await this.prisma.orm.WebhookEvent.where({ id }).first();
     if (!record) throw new NotFoundError('Webhook event');
     const updated = await this.prisma.orm.WebhookEvent.where({ id }).update({

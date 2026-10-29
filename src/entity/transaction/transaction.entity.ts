@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from 'type-graphql';
+import { ObjectType, Field, ID, Int } from 'type-graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 
 import { Entity } from '#src/graphql/interface.js';
@@ -8,11 +8,14 @@ import { GraphQLBigInt } from '#src/graphql/scalar/index.js';
 /** One row per deposit: fiat in, stablecoin out to the customer's payout wallet. */
 @ObjectType({ implements: Entity })
 export class Transaction extends Entity {
-  @Field(() => Int)
-  customerId: number;
+  @Field(() => String, { description: 'Customer-facing code, e.g. NXP-7K3M9QX2' })
+  reference: string;
 
-  @Field(() => Int, { nullable: true })
-  virtualAccountId?: number | null;
+  @Field(() => ID)
+  customerId: string;
+
+  @Field(() => ID, { nullable: true })
+  virtualAccountId?: string | null;
 
   bridgeDepositId: string;
   bridgeTransferId?: string | null;
@@ -53,8 +56,8 @@ export class Transaction extends Entity {
   @Field(() => GraphQLJSON, { nullable: true })
   feeBreakdown?: unknown;
 
-  @Field(() => Int, { nullable: true })
-  feeScheduleId?: number | null;
+  @Field(() => ID, { nullable: true })
+  feeScheduleId?: string | null;
 
   @Field(() => GraphQLJSON, { nullable: true })
   destinationWalletSnapshot?: unknown;
@@ -94,11 +97,11 @@ export class Transaction extends Entity {
 
 @ObjectType()
 export class TransactionEvent {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
-  @Field(() => Int)
-  transactionId: number;
+  @Field(() => ID)
+  transactionId: string;
 
   @Field(() => TransactionEventSource)
   source: TransactionEventSource | string;

@@ -1,12 +1,15 @@
-import { ObjectType, Field, Int } from 'type-graphql';
+import { ObjectType, Field, ID } from 'type-graphql';
 
 import { Entity } from '#src/graphql/interface.js';
 import { TicketStatus } from '#src/graphql/enum.js';
 
 @ObjectType({ implements: Entity })
 export class SupportTicket extends Entity {
-  @Field(() => Int)
-  customerId: number;
+  @Field(() => String, { description: 'Customer-facing code, e.g. SUP-7K3M9QX2' })
+  reference: string;
+
+  @Field(() => ID)
+  customerId: string;
 
   @Field(() => String)
   subject: string;
@@ -14,8 +17,8 @@ export class SupportTicket extends Entity {
   @Field(() => TicketStatus)
   status: TicketStatus | string;
 
-  @Field(() => Int, { nullable: true })
-  assigneeId?: number | null;
+  @Field(() => ID, { nullable: true })
+  assigneeId?: string | null;
 
   @Field(() => Date, { nullable: true })
   lastMessageAt?: Date | null;
@@ -23,13 +26,13 @@ export class SupportTicket extends Entity {
 
 @ObjectType()
 export class SupportMessage {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
-  @Field(() => Int)
-  ticketId: number;
+  @Field(() => ID)
+  ticketId: string;
 
-  authorId: number;
+  authorId: string;
 
   @Field(() => String)
   body: string;

@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from 'type-graphql';
+import { ObjectType, Field, ID } from 'type-graphql';
 
 import { Entity } from '#src/graphql/interface.js';
 import { Chain, FiatCurrency } from '#src/graphql/enum.js';
@@ -42,11 +42,11 @@ export class DepositInstructions {
 
 @ObjectType({ implements: Entity })
 export class VirtualAccount extends Entity {
-  @Field(() => Int)
-  customerId: number;
+  @Field(() => ID)
+  customerId: string;
 
-  @Field(() => Int)
-  custodialWalletId: number;
+  @Field(() => ID)
+  custodialWalletId: string;
 
   bridgeVirtualAccountId: string;
 

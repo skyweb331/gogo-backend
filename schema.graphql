@@ -24,14 +24,14 @@ type AppInfo {
 type AuditLog {
   action: String!
   actor: User
-  actorId: Int
+  actorId: ID
   actorRole: String
   after: JSON
   before: JSON
   createdAt: DateTimeISO!
   entity: String!
   entityId: String
-  id: Int!
+  id: ID!
   ip: String
 }
 
@@ -85,7 +85,7 @@ type Customer implements Entity & TimeStamp {
   country: String
   createdAt: DateTimeISO
   endorsements: JSON
-  id: Int!
+  id: ID!
 
   """Hosted Bridge KYC link (staff only)"""
   kycLink: String
@@ -93,7 +93,7 @@ type Customer implements Entity & TimeStamp {
   onboardedAt: DateTimeISO
   onboardingStep: OnboardingStep!
   payoutWallet: Wallet
-  payoutWalletId: Int
+  payoutWalletId: ID
   region: String
   rejectionReasons: JSON
   status: CustomerStatus!
@@ -102,7 +102,7 @@ type Customer implements Entity & TimeStamp {
   type: CustomerType
   updatedAt: DateTimeISO
   user: User
-  userId: Int!
+  userId: ID!
   virtualAccounts: [VirtualAccount!]!
   wallets: [Wallet!]!
 }
@@ -173,7 +173,7 @@ type DepositInstructions {
 
 interface Entity implements TimeStamp {
   createdAt: DateTimeISO
-  id: Int!
+  id: ID!
   updatedAt: DateTimeISO
 }
 
@@ -184,7 +184,7 @@ type ExportedWalletKey {
 
   """0x hex (Base) or base58 64-byte keypair (Solana)"""
   privateKey: String!
-  walletId: Int!
+  walletId: ID!
 }
 
 type FeeBreakdownLine {
@@ -257,16 +257,16 @@ type FeeSchedule implements Entity & TimeStamp {
   cancelledAt: DateTimeISO
   createdAt: DateTimeISO
   createdBy: User
-  createdById: Int
+  createdById: ID
 
   """YYYY-MM"""
   effectivePeriod: String!
-  id: Int!
+  id: ID!
   notes: String
   notifyCustomers: Boolean!
   publishedAt: DateTimeISO
   publishedBy: User
-  publishedById: Int
+  publishedById: ID
   status: FeeScheduleStatus!
   tiers: [FeeTier!]!
   updatedAt: DateTimeISO
@@ -298,7 +298,7 @@ type FeeSettings {
 
 type FeeTier {
   fromInCents: BigInteger!
-  id: Int!
+  id: ID!
   position: Int!
 
   """Rate in basis points (100 = 1%)"""
@@ -343,11 +343,11 @@ type LoginResponse {
 }
 
 type MonthlyVolume {
-  customerId: Int!
+  customerId: ID!
 
   """Fees charged, USD cents"""
   feeInCents: BigInteger!
-  id: Int!
+  id: ID!
   periodKey: String!
   txCount: Int!
 
@@ -364,34 +364,34 @@ type Mutation {
   addExternalWallet(data: AddExternalWalletInput!): Wallet!
   archiveExternalWallet(data: WalletReauthInput!): Wallet!
   beginTotpSetup(mfaToken: String!): TotpSetup!
-  cancelFeeSchedule(id: Int!): FeeSchedule!
-  closeSupportTicket(id: Int!): SupportTicket!
+  cancelFeeSchedule(id: ID!): FeeSchedule!
+  closeSupportTicket(id: ID!): SupportTicket!
   completeOnboarding: OnboardingStatus!
   configureFeeExternalAccount(input: ConfigureFeeExternalAccountInput!): FeeExternalAccountInfo!
   confirmTotpSetup(data: TotpInput!): LoginResponse!
   createFeeScheduleDraft(data: CreateFeeScheduleDraftInput!): FeeSchedule!
   createStaffUser(data: CreateStaffUserInput!): User!
   createSupportTicket(input: CreateSupportTicketInput!): SupportTicket!
-  deactivateVirtualAccount(id: Int!): VirtualAccount!
+  deactivateVirtualAccount(id: ID!): VirtualAccount!
   exportWalletKey(data: WalletReauthInput!): ExportedWalletKey!
   login(data: LoginInput!): LoginResponse!
   publishFeeSchedule(data: PublishFeeScheduleInput!): FeeSchedule!
-  reactivateCustomer(id: Int!): Customer!
+  reactivateCustomer(id: ID!): Customer!
   refreshKycStatus: OnboardingStatus!
-  regenerateCustomerKycLink(id: Int!): Customer!
+  regenerateCustomerKycLink(id: ID!): Customer!
   regenerateKycLink: OnboardingStatus!
   removeWalletKey(data: RemoveWalletKeyInput!): Wallet!
-  replayWebhookEvent(id: Int!): WebhookEvent!
+  replayWebhookEvent(id: ID!): WebhookEvent!
   replySupportTicket(input: ReplySupportTicketInput!): SupportTicket!
   requestPasswordReset(data: RequestPasswordResetInput!): SuccessResponse!
 
   """Emails a code for adding wallets or changing the payout wallet"""
   requestWalletChangeCode: SuccessResponse!
-  requestWalletKeyExport(walletId: Int!): SuccessResponse!
+  requestWalletKeyExport(walletId: ID!): SuccessResponse!
   resendVerification: SuccessResponse!
   resetPassword(data: ResetPasswordInput!): SuccessResponse!
-  resetStaffTotp(id: Int!): User!
-  retryPayout(id: Int!): Transaction!
+  resetStaffTotp(id: ID!): User!
+  retryPayout(id: ID!): Transaction!
 
   """Re-runs the month-start status update"""
   rolloverFeeSchedules: SuccessResponse!
@@ -448,7 +448,7 @@ enum OnboardingStep {
 
 input PublishFeeScheduleInput {
   effectivePeriod: String!
-  id: Int!
+  id: ID!
   notifyCustomers: Boolean
 }
 
@@ -458,7 +458,7 @@ type Query {
 
   """Schedule in effect this month"""
   currentFeeSchedule: FeeSchedule!
-  customer(id: Int!): Customer
+  customer(id: ID!): Customer
   customers(
     filter: JSONObject
     page: String
@@ -475,35 +475,35 @@ type Query {
 
   """Starts from this month’s volume when called by a customer"""
   feeQuote(amountInCents: BigInteger!, currency: FiatCurrency! = usd): FeeQuote!
-  feeSchedule(id: Int!): FeeSchedule
+  feeSchedule(id: ID!): FeeSchedule
   feeSchedules(filter: JSONObject, page: String, sort: String): FeeSchedulesResponse!
   feeSettings: FeeSettings!
   me: User!
   monthlyVolumes(filter: JSONObject, page: String, sort: String): MonthlyVolumesResponse!
   onboardingStatus: OnboardingStatus!
   staffUsers(filter: JSONObject, page: String, sort: String): UsersResponse!
-  supportTicket(id: Int!): SupportTicket
+  supportTicket(id: ID!): SupportTicket
   supportTickets(filter: JSONObject, page: String, sort: String): SupportTicketsResponse!
-  transaction(id: Int!): Transaction
+  transaction(id: ID!): Transaction
   transactions(filter: JSONObject, page: String, sort: String): TransactionsResponse!
 
   """Next published schedule, if any"""
   upcomingFeeSchedule: FeeSchedule
-  virtualAccount(id: Int!): VirtualAccount
+  virtualAccount(id: ID!): VirtualAccount
   virtualAccounts(filter: JSONObject, page: String, sort: String): VirtualAccountsResponse!
-  wallet(id: Int!): Wallet
-  wallets(customerId: Int, includeArchived: Boolean): [Wallet!]!
+  wallet(id: ID!): Wallet
+  wallets(customerId: ID, includeArchived: Boolean): [Wallet!]!
   webhookEvents(filter: JSONObject, page: String, sort: String): WebhookEventsResponse!
 }
 
 input RemoveWalletKeyInput {
   password: String!
-  walletId: Int!
+  walletId: ID!
 }
 
 input ReplySupportTicketInput {
   body: String!
-  ticketId: Int!
+  ticketId: ID!
 }
 
 input RequestPasswordResetInput {
@@ -530,7 +530,7 @@ input SimulateDepositInput {
   """
   amount: String!
   currency: FiatCurrency!
-  customerId: Int!
+  customerId: ID!
 }
 
 input StartOnboardingInput {
@@ -545,20 +545,23 @@ type SupportMessage {
   authorName: String!
   body: String!
   createdAt: DateTimeISO!
-  id: Int!
+  id: ID!
   isStaff: Boolean!
-  ticketId: Int!
+  ticketId: ID!
 }
 
 type SupportTicket implements Entity & TimeStamp {
   assignee: User
-  assigneeId: Int
+  assigneeId: ID
   createdAt: DateTimeISO
   customer: Customer
-  customerId: Int!
-  id: Int!
+  customerId: ID!
+  id: ID!
   lastMessageAt: DateTimeISO
   messages: [SupportMessage!]!
+
+  """Customer-facing code, e.g. SUP-7K3M9QX2"""
+  reference: String!
   status: TicketStatus!
   subject: String!
   updatedAt: DateTimeISO
@@ -570,7 +573,7 @@ type SupportTicketsResponse {
 }
 
 input SuspendCustomerInput {
-  id: Int!
+  id: ID!
   reason: String!
 }
 
@@ -611,7 +614,7 @@ type Transaction implements Entity & TimeStamp {
   creditedAt: DateTimeISO
   currency: FiatCurrency!
   customer: Customer
-  customerId: Int!
+  customerId: ID!
   destinationWalletSnapshot: JSON
   events: [TransactionEvent!]!
 
@@ -624,11 +627,11 @@ type Transaction implements Entity & TimeStamp {
   """NxPay fee, in the deposit currency"""
   feeInCents: BigInteger
   feeSchedule: FeeSchedule
-  feeScheduleId: Int
+  feeScheduleId: ID
   fundsReceivedAt: DateTimeISO
   fxRate: String
   grossAmountInCents: BigInteger!
-  id: Int!
+  id: ID!
 
   """Stablecoin sent to the payout wallet"""
   netAmountInCents: BigInteger
@@ -637,23 +640,26 @@ type Transaction implements Entity & TimeStamp {
 
   """ach_push | wire | sepa"""
   rail: String
+
+  """Customer-facing code, e.g. NXP-7K3M9QX2"""
+  reference: String!
   sourceDetails: JSON
   state: TransactionState!
   txHash: String
   updatedAt: DateTimeISO
   usdEquivalentInCents: BigInteger
   virtualAccount: VirtualAccount
-  virtualAccountId: Int
+  virtualAccountId: ID
 }
 
 type TransactionEvent {
   createdAt: DateTimeISO!
-  id: Int!
+  id: ID!
 
   """Raw Bridge or system payload"""
   payload: JSON
   source: TransactionEventSource!
-  transactionId: Int!
+  transactionId: ID!
   type: String!
 }
 
@@ -683,7 +689,7 @@ type TransactionsResponse {
 
 input UpdateFeeScheduleDraftInput {
   effectivePeriod: String
-  id: Int!
+  id: ID!
   notes: String
   notifyCustomers: Boolean
   tiers: [FeeTierInput!]
@@ -704,20 +710,20 @@ input UpdateProfileInput {
 
 input UpdateStaffUserInput {
   disabled: Boolean
-  id: Int!
+  id: ID!
   name: String
   role: UserRole
 }
 
 input UpdateSupportTicketInput {
-  assigneeId: Int
-  id: Int!
+  assigneeId: ID
+  id: ID!
   status: TicketStatus
 }
 
 input UpdateWalletLabelInput {
   label: String!
-  walletId: Int!
+  walletId: ID!
 }
 
 type User implements Entity & TimeStamp {
@@ -725,7 +731,7 @@ type User implements Entity & TimeStamp {
   customer: Customer
   deletedAt: DateTimeISO
   email: String!
-  id: Int!
+  id: ID!
   isEmailVerified: Boolean!
   lastLoginAt: DateTimeISO
   name: String!
@@ -753,14 +759,14 @@ type VirtualAccount implements Entity & TimeStamp {
   """Bridge virtual account id (staff only)"""
   bridgeVirtualAccountId: String
   createdAt: DateTimeISO
-  custodialWalletId: Int!
+  custodialWalletId: ID!
   customer: Customer
-  customerId: Int!
+  customerId: ID!
   deactivatedAt: DateTimeISO
   depositInstructions: DepositInstructions!
   destinationChain: Chain!
   destinationCurrency: String!
-  id: Int!
+  id: ID!
   sourceCurrency: FiatCurrency!
   status: String!
   updatedAt: DateTimeISO
@@ -775,8 +781,8 @@ type Wallet implements Entity & TimeStamp {
   address: String!
   chain: Chain!
   createdAt: DateTimeISO
-  customerId: Int!
-  id: Int!
+  customerId: ID!
+  id: ID!
   isPayout: Boolean!
   keyExportedAt: DateTimeISO
   keyRemovedAt: DateTimeISO
@@ -797,7 +803,7 @@ enum WalletKeyStatus {
 input WalletReauthInput {
   otp: String!
   password: String!
-  walletId: Int!
+  walletId: ID!
 }
 
 enum WalletStatus {
@@ -816,7 +822,7 @@ type WebhookEvent implements Entity & TimeStamp {
   category: String!
   createdAt: DateTimeISO
   error: String
-  id: Int!
+  id: ID!
   objectId: String
   payload: JSON!
   processedAt: DateTimeISO

@@ -5,7 +5,8 @@ import bcrypt from 'bcryptjs';
 import { config } from '#src/config.js';
 
 export interface AccessTokenPayload {
-  id: number;
+  /** User UUID; an integer in tokens issued before the UUID switch (see `legacyIdOf`). */
+  id: string | number;
   /** Bumped when the password changes, invalidating older tokens. */
   pv: number;
   /** Admin session that has passed TOTP. */
@@ -31,11 +32,11 @@ export const verifyPassword = async (password: string, hashedPassword: string) =
 };
 
 /** Short-lived token for the second step of an admin login (TOTP). */
-export const createMfaChallengeToken = (userId: number) =>
+export const createMfaChallengeToken = (userId: string) =>
   jwt.sign({ id: userId, purpose: 'mfa' }, config.JWT_SECRET, { expiresIn: '5m' });
 
-export const verifyMfaChallengeToken = (token: string): number => {
-  const payload = jwt.verify(token, config.JWT_SECRET) as { id: number; purpose?: string };
+export const verifyMfaChallengeToken = (token: string): string | number => {
+  const payload = jwt.verify(token, config.JWT_SECRET) as { id: string | number; purpose?: string };
   if (payload.purpose !== 'mfa') throw new Error('Invalid token');
   return payload.id;
 };

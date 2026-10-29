@@ -14,15 +14,15 @@ export class CustodialWalletService {
     private readonly bridge: BridgeService
   ) {}
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.CustodialWallet.where({ id }).first();
   }
 
-  async getForCustomer(customerId: number, chain: Chain = config.CUSTODIAL_CHAIN as Chain) {
+  async getForCustomer(customerId: string, chain: Chain = config.CUSTODIAL_CHAIN as Chain) {
     return this.prisma.orm.CustodialWallet.where({ customerId, chain }).first();
   }
 
-  async listForCustomer(customerId: number): Promise<CustodialWalletRow[]> {
+  async listForCustomer(customerId: string): Promise<CustodialWalletRow[]> {
     return this.prisma.orm.CustodialWallet.where({ customerId })
       .orderBy((w) => w.id.asc())
       .all();

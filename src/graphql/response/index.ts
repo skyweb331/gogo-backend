@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from 'type-graphql';
+import { Field, ID, Int, ObjectType } from 'type-graphql';
 
 @ObjectType()
 export abstract class PaginatedResponse {
@@ -14,6 +14,6 @@ export class SuccessResponse {
 
 @ObjectType()
 export class IDsResponse {
-  @Field(() => [Int])
-  ids: number[];
+  @Field(() => [ID])
+  ids: string[];
 }

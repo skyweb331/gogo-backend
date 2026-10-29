@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { Arg, Args, Authorized, Ctx, Info, Int, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Args, Authorized, Ctx, ID, Info, Mutation, Query, Resolver } from 'type-graphql';
 import graphqlFields from 'graphql-fields';
 import type { GraphQLResolveInfo } from 'graphql';
 
@@ -32,7 +32,7 @@ export class WebhookEventResolver {
   @Authorized([UserRole.Admin])
   @Mutation(() => WebhookEvent)
   async replayWebhookEvent(
-    @Arg('id', () => Int) id: number,
+    @Arg('id', () => ID) id: string,
     @Ctx() ctx: Context
   ): Promise<WebhookEvent> {
     return this.service.replay(id, ctx);

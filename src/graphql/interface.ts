@@ -1,4 +1,4 @@
-import { Field, Int, InterfaceType } from 'type-graphql';
+import { Field, ID, InterfaceType } from 'type-graphql';
 
 @InterfaceType()
 export abstract class TimeStamp {
@@ -11,6 +11,6 @@ export abstract class TimeStamp {
 
 @InterfaceType({ implements: TimeStamp })
 export abstract class Entity extends TimeStamp {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 }

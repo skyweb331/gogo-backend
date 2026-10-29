@@ -5,7 +5,7 @@ import { groupBy, uniq } from './utils.js';
 import type { SupportMessageRow } from '#src/service/prisma.js';
 
 export const supportMessagesLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, SupportMessageRow[]>(
+  return new DataLoader<string, SupportMessageRow[]>(
     async (ticketIds) => {
       const rows = await parent.prisma.orm.SupportMessage.where((m) =>
         m.ticketId.in(uniq(ticketIds))

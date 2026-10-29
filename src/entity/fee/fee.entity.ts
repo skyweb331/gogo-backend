@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from 'type-graphql';
+import { ObjectType, Field, ID, Int } from 'type-graphql';
 
 import { Entity } from '#src/graphql/interface.js';
 import { FeeScheduleStatus } from '#src/graphql/enum.js';
@@ -6,8 +6,8 @@ import { GraphQLBigInt } from '#src/graphql/scalar/index.js';
 
 @ObjectType()
 export class FeeTier {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => Int)
   position: number;
@@ -37,11 +37,11 @@ export class FeeSchedule extends Entity {
   @Field(() => Boolean)
   notifyCustomers: boolean;
 
-  @Field(() => Int, { nullable: true })
-  createdById?: number | null;
+  @Field(() => ID, { nullable: true })
+  createdById?: string | null;
 
-  @Field(() => Int, { nullable: true })
-  publishedById?: number | null;
+  @Field(() => ID, { nullable: true })
+  publishedById?: string | null;
 
   @Field(() => Date, { nullable: true })
   publishedAt?: Date | null;

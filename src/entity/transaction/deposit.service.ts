@@ -17,6 +17,7 @@ import { FxRateService } from '#src/entity/fee/fxRate.service.js';
 import { stateForVirtualAccountEvent } from '#src/state/transaction.stateMachine.js';
 import type { WebhookOutcome } from '#src/webhook/dispatcher.js';
 import { isSqlError } from '#src/utils/errors.js';
+import { generateReference } from '#src/utils/reference.js';
 import { decimalToCents, formatMoney, multiplyByDecimal } from '#src/utils/money.js';
 import { periodKeyOf } from '#src/utils/period.js';
 
@@ -113,6 +114,7 @@ export class DepositService {
     const gross = cents(activity.amount) ?? cents(activity.receipt?.initial_amount) ?? 0n;
     try {
       return await this.prisma.orm.Transaction.create({
+        reference: generateReference('NXP'),
         customerId: va.customerId,
         virtualAccountId: va.id,
         bridgeDepositId: activity.deposit_id!,
@@ -202,7 +204,7 @@ export class DepositService {
         };
         after.push(() =>
           this.mailer.opsAlert('Bridge refund failed', [
-            `Transaction ${tx.id} (deposit ${tx.bridgeDepositId}) refund failed.`,
+            `Transaction ${tx.reference} (deposit ${tx.bridgeDepositId}) refund failed.`,
             activity.refund?.reason ?? '',
           ])
         );
@@ -230,7 +232,7 @@ export class DepositService {
     if (!updated) throw new Error(`Transaction ${tx.id} changed concurrently`);
   }
 
-  private async notifyReceived(transactionId: number) {
+  private async notifyReceived(transactionId: string) {
     const tx = await this.transactions.getById(transactionId);
     if (!tx) return;
     const customer = await this.prisma.orm.Customer.where({ id: tx.customerId }).first();
@@ -249,7 +251,7 @@ export class DepositService {
         rows: [
           ['Amount', formatMoney(tx.grossAmountInCents, tx.currency)],
           ['Method', RAIL_LABEL[tx.rail ?? ''] ?? tx.rail ?? 'Bank transfer'],
-          ['Reference', `#${tx.id}`],
+          ['Reference', tx.reference],
         ],
       },
     });

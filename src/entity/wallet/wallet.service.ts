@@ -47,11 +47,11 @@ export class WalletService {
     private readonly limiter: RateLimiterService
   ) {}
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.Wallet.where({ id }).first();
   }
 
-  async listForCustomer(customerId: number, includeArchived = false): Promise<WalletRow[]> {
+  async listForCustomer(customerId: string, includeArchived = false): Promise<WalletRow[]> {
     return this.prisma.orm.Wallet.where((w) =>
       includeArchived
         ? w.customerId.eq(customerId)
@@ -61,7 +61,7 @@ export class WalletService {
       .all();
   }
 
-  async getGenerated(customerId: number, chain: Chain) {
+  async getGenerated(customerId: string, chain: Chain) {
     return this.prisma.orm.Wallet.where({ customerId, chain, type: WalletType.Generated }).first();
   }
 
@@ -74,7 +74,7 @@ export class WalletService {
   // Generation (onboarding)
 
   /** One generated wallet per chain; the key is sealed in the same transaction. Idempotent. */
-  async ensureGeneratedWallet(customerId: number, chain: Chain): Promise<WalletRow> {
+  async ensureGeneratedWallet(customerId: string, chain: Chain): Promise<WalletRow> {
     const existing = await this.getGenerated(customerId, chain);
     if (existing) return existing;
 
@@ -143,7 +143,7 @@ export class WalletService {
     await this.codes.consumeCode(user.id, purpose, otp, meta);
   }
 
-  private async ownedWallet(customer: CustomerRow, walletId: number) {
+  private async ownedWallet(customer: CustomerRow, walletId: string) {
     const wallet = await this.getById(walletId);
     if (!wallet || wallet.customerId !== customer.id) throw new NotFoundError('Wallet');
     return wallet;
@@ -204,7 +204,7 @@ export class WalletService {
   async setPayout(
     user: UserRow,
     customer: CustomerRow,
-    walletId: number,
+    walletId: string,
     password: string,
     otp: string,
     ctx: Context
@@ -238,7 +238,7 @@ export class WalletService {
   async archiveExternal(
     user: UserRow,
     customer: CustomerRow,
-    walletId: number,
+    walletId: string,
     password: string,
     otp: string,
     ctx: Context
@@ -262,14 +262,14 @@ export class WalletService {
     return updated;
   }
 
-  async updateLabel(customer: CustomerRow, walletId: number, label: string) {
+  async updateLabel(customer: CustomerRow, walletId: string, label: string) {
     const wallet = await this.ownedWallet(customer, walletId);
     return (await this.prisma.orm.Wallet.where({ id: wallet.id }).update({ label: label.trim() }))!;
   }
 
   // Key export / removal
 
-  async requestKeyExport(user: UserRow, customer: CustomerRow, walletId: number) {
+  async requestKeyExport(user: UserRow, customer: CustomerRow, walletId: string) {
     const wallet = await this.ownedWallet(customer, walletId);
     if (wallet.type !== WalletType.Generated)
       throw new AppError('Only NxPay-generated wallets have a stored key');
@@ -295,7 +295,7 @@ export class WalletService {
   async exportKey(
     user: UserRow,
     customer: CustomerRow,
-    walletId: number,
+    walletId: string,
     password: string,
     otp: string,
     ctx: Context
@@ -374,7 +374,7 @@ export class WalletService {
   async removeKey(
     user: UserRow,
     customer: CustomerRow,
-    walletId: number,
+    walletId: string,
     password: string,
     ctx: Context
   ) {

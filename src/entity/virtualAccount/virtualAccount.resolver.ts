@@ -5,8 +5,8 @@ import {
   Authorized,
   Ctx,
   FieldResolver,
+  ID,
   Info,
-  Int,
   Mutation,
   Query,
   Resolver,
@@ -49,7 +49,7 @@ export class VirtualAccountResolver {
 
   @Authorized()
   @Query(() => VirtualAccount, { nullable: true })
-  async virtualAccount(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async virtualAccount(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     const va = await this.service.getById(id);
     assertOwnership(ctx, va);
     return va;
@@ -57,7 +57,7 @@ export class VirtualAccountResolver {
 
   @Authorized([UserRole.Admin])
   @Mutation(() => VirtualAccount)
-  async deactivateVirtualAccount(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async deactivateVirtualAccount(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     return this.service.deactivate(id, ctx);
   }
 

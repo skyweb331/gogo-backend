@@ -30,15 +30,15 @@ export class MonthlyVolumeService {
     return Number(total);
   }
 
-  async get(customerId: number, periodKey: string) {
+  async get(customerId: string, periodKey: string) {
     return this.prisma.orm.MonthlyVolume.where({ customerId, periodKey }).first();
   }
 
-  async volumeOf(customerId: number, periodKey: string): Promise<bigint> {
+  async volumeOf(customerId: string, periodKey: string): Promise<bigint> {
     return (await this.get(customerId, periodKey))?.volumeInCents ?? 0n;
   }
 
-  private async getOrCreate(customerId: number, periodKey: string): Promise<MonthlyVolumeRow> {
+  private async getOrCreate(customerId: string, periodKey: string): Promise<MonthlyVolumeRow> {
     const existing = await this.get(customerId, periodKey);
     if (existing) return existing;
     try {
@@ -55,7 +55,7 @@ export class MonthlyVolumeService {
    * is the last line of defence.
    */
   async apply(
-    customerId: number,
+    customerId: string,
     periodKey: string,
     deltaVolume: bigint,
     deltaFee: bigint,

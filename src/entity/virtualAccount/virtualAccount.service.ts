@@ -53,7 +53,7 @@ export class VirtualAccountService {
     return Number(total);
   }
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.VirtualAccount.where({ id }).first();
   }
 
@@ -61,7 +61,7 @@ export class VirtualAccountService {
     return this.prisma.orm.VirtualAccount.where({ bridgeVirtualAccountId }).first();
   }
 
-  async activeFor(customerId: number, currency: FiatCurrency) {
+  async activeFor(customerId: string, currency: FiatCurrency) {
     return this.prisma.orm.VirtualAccount.where((v) =>
       and(v.customerId.eq(customerId), v.sourceCurrency.eq(currency), v.deactivatedAt.isNull())
     ).first();
@@ -118,7 +118,7 @@ export class VirtualAccountService {
   }
 
   private rowFromRemote(
-    customerId: number,
+    customerId: string,
     custodial: CustodialWalletRow,
     currency: FiatCurrency,
     remote: BridgeVirtualAccount
@@ -148,7 +148,7 @@ export class VirtualAccountService {
     });
   }
 
-  async deactivate(id: number, ctx: Context) {
+  async deactivate(id: string, ctx: Context) {
     const va = await this.getById(id);
     if (!va) throw new NotFoundError('Virtual account');
     if (va.deactivatedAt) throw new AppError('Virtual account is already deactivated');

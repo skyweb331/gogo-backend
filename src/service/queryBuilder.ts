@@ -2,6 +2,7 @@ import { and, not, or } from '@prisma/orm-postgres/orm-client';
 
 import { contract } from '#src/service/prisma.js';
 import { AppError } from '#src/utils/errors.js';
+import { isUuid } from '#src/utils/id.js';
 
 export interface ListQuery {
   sort?: string;
@@ -52,6 +53,9 @@ function coerce(model: string, field: string, value: unknown): unknown {
         if (!Number.isInteger(n)) throw new Error();
         return n;
       }
+      case 'pg/uuid@1':
+        if (!isUuid(value)) throw new Error();
+        return value;
       case 'pg/bool@1':
         return value === true || value === 'true';
       case 'pg/timestamptz-date@1': {
@@ -86,6 +90,7 @@ const OPERATORS = new Set([
   'not',
   'mode',
 ]);
+const TEXT_OPERATORS = new Set(['contains', 'startsWith', 'endsWith']);
 
 function fieldPredicate(m: any, model: string, field: string, raw: unknown): any {
   const f = m[field];
@@ -96,6 +101,9 @@ function fieldPredicate(m: any, model: string, field: string, raw: unknown): any
   const parts: any[] = [];
   for (const [op, value] of Object.entries(raw as Record<string, unknown>)) {
     if (!OPERATORS.has(op)) throw new AppError(`Unsupported filter operator "${op}"`);
+    if (TEXT_OPERATORS.has(op) && columnCodec(model, field) === 'pg/uuid@1') {
+      throw new AppError(`Unsupported filter operator "${op}" for ${field}`);
+    }
     switch (op) {
       case 'eq':
         parts.push(value === null ? f.isNull() : f.eq(coerce(model, field, value)));

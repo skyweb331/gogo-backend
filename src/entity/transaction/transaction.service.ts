@@ -4,17 +4,22 @@ import { and } from '@prisma/orm-postgres/orm-client';
 import { PrismaService, toJson, type TransactionRow } from '#src/service/prisma.js';
 import { TransactionEventSource, TransactionState } from '#src/graphql/enum.js';
 import { canTransition } from '#src/state/transaction.stateMachine.js';
+import { idOrLegacy } from '#src/utils/id.js';
 
 import type { TransactionQueryArgs } from './transaction.type.js';
 
 export type TransactionPatch = Partial<
-  Omit<TransactionRow, 'id' | 'customerId' | 'createdAt' | 'updatedAt' | 'version'>
+  Omit<
+    TransactionRow,
+    'id' | 'legacyId' | 'reference' | 'customerId' | 'createdAt' | 'updatedAt' | 'version'
+  >
 >;
 
 const TRANSACTION_LIST = {
   model: 'Transaction',
   filterable: [
     'id',
+    'reference',
     'customerId',
     'virtualAccountId',
     'currency',
@@ -31,7 +36,6 @@ const TRANSACTION_LIST = {
     'createdAt',
   ],
   sortable: [
-    'id',
     'createdAt',
     'fundsReceivedAt',
     'completedAt',
@@ -57,8 +61,13 @@ export class TransactionService {
     return Number(total);
   }
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.Transaction.where({ id }).first();
+  }
+
+  /** Also accepts the integer ids in links from emails sent before the UUID migration. */
+  async getByIdOrLegacy(id: string) {
+    return this.prisma.orm.Transaction.where(idOrLegacy(id)).first();
   }
 
   async getByDepositId(bridgeDepositId: string) {
@@ -69,7 +78,7 @@ export class TransactionService {
     return this.prisma.orm.Transaction.where({ bridgeTransferId }).first();
   }
 
-  async hasEvent(transactionId: number, source: TransactionEventSource, type: string) {
+  async hasEvent(transactionId: string, source: TransactionEventSource, type: string) {
     const row = await this.prisma.orm.TransactionEvent.where({ transactionId, source, type })
       .select('id')
       .first();
@@ -77,7 +86,7 @@ export class TransactionService {
   }
 
   async recordEvent(
-    transactionId: number,
+    transactionId: string,
     source: TransactionEventSource,
     type: string,
     payload?: unknown
@@ -113,7 +122,7 @@ export class TransactionService {
 
   /** Reload-and-retry wrapper around `update` for concurrent writers. */
   async mutate(
-    id: number,
+    id: string,
     fn: (tx: TransactionRow) => TransactionPatch | null
   ): Promise<TransactionRow> {
     for (let attempt = 0; attempt < 5; attempt++) {

@@ -25,7 +25,7 @@ async function main() {
 
   let rewrapped = 0;
   let failed = 0;
-  let lastId = 0;
+  let lastId = '00000000-0000-0000-0000-000000000000';
   for (;;) {
     const rows = await prisma.orm.WalletKey.where((k) =>
       and(not(k.masterKeyVersion.eq(current)), k.id.gt(lastId))
@@ -39,8 +39,10 @@ async function main() {
       lastId = row.id;
       const wallet = await prisma.orm.Wallet.where({ id: row.walletId }).first();
       if (!wallet) continue;
+      const customer = await prisma.orm.Customer.where({ id: wallet.customerId }).first();
+      if (!customer) continue;
       try {
-        const next = vault.rewrap(row, walletKeyAad(wallet.id, wallet.customerId));
+        const next = vault.rewrap(row, walletKeyAad(wallet, customer));
         await prisma.orm.WalletKey.where({
           id: row.id,
           masterKeyVersion: row.masterKeyVersion,

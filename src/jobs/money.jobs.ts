@@ -10,18 +10,21 @@ import {
   SYNC_TRANSFER,
 } from '#src/entity/transaction/payout.service.js';
 
+import { resolveJobId } from './legacyId.js';
+
 /** Fee + volume; one at a time per customer so tier boundaries are applied in order. */
-export const processDeposit = defineJob<{ transactionId: number }>({
+export const processDeposit = defineJob<{ transactionId: string | number }>({
   name: PROCESS_DEPOSIT,
   queue: { policy: 'exclusive', retryLimit: 10, retryDelay: 30, retryBackoff: true },
   work: { localConcurrency: 4, groupConcurrency: 1 },
-  handler: async ({ transactionId }) => {
-    await Container.get(PayoutService).processDeposit(transactionId);
+  handler: async (data) => {
+    const transactionId = await resolveJobId('Transaction', data.transactionId);
+    if (transactionId) await Container.get(PayoutService).processDeposit(transactionId);
   },
 });
 
 /** Retries cover the custodial balance not having landed yet and Bridge outages. */
-export const createPayout = defineJob<{ transactionId: number }>({
+export const createPayout = defineJob<{ transactionId: string | number }>({
   name: CREATE_PAYOUT,
   queue: {
     policy: 'exclusive',
@@ -31,17 +34,19 @@ export const createPayout = defineJob<{ transactionId: number }>({
     retryDelayMax: 1800,
   },
   work: { localConcurrency: 4 },
-  handler: async ({ transactionId }) => {
-    await Container.get(PayoutService).createPayout(transactionId);
+  handler: async (data) => {
+    const transactionId = await resolveJobId('Transaction', data.transactionId);
+    if (transactionId) await Container.get(PayoutService).createPayout(transactionId);
   },
 });
 
-export const syncTransfer = defineJob<{ transactionId: number }>({
+export const syncTransfer = defineJob<{ transactionId: string | number }>({
   name: SYNC_TRANSFER,
   queue: { policy: 'exclusive', retryLimit: 3 },
   work: { localConcurrency: 4 },
-  handler: async ({ transactionId }) => {
-    await Container.get(PayoutService).syncTransfer(transactionId);
+  handler: async (data) => {
+    const transactionId = await resolveJobId('Transaction', data.transactionId);
+    if (transactionId) await Container.get(PayoutService).syncTransfer(transactionId);
   },
 });
 

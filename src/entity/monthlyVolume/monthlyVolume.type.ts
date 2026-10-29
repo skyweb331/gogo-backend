@@ -1,4 +1,4 @@
-import { ArgsType, Field, Int, ObjectType } from 'type-graphql';
+import { ArgsType, Field, ID, Int, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
@@ -6,11 +6,11 @@ import { GraphQLBigInt } from '#src/graphql/scalar/index.js';
 
 @ObjectType()
 export class MonthlyVolume {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
-  @Field(() => Int)
-  customerId: number;
+  @Field(() => ID)
+  customerId: string;
 
   @Field(() => String)
   periodKey: string;

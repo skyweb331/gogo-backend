@@ -5,7 +5,7 @@ import { groupBy, indexBy, uniq } from './utils.js';
 import type { FeeScheduleRow, FeeTierRow } from '#src/service/prisma.js';
 
 export const feeScheduleLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, FeeScheduleRow | null>(
+  return new DataLoader<string, FeeScheduleRow | null>(
     async (ids) => {
       const rows = await parent.prisma.orm.FeeSchedule.where((s) => s.id.in(uniq(ids))).all();
       return indexBy(ids, rows, (s) => s.id);
@@ -15,7 +15,7 @@ export const feeScheduleLoader = (parent: RootDataLoader) => {
 };
 
 export const feeTiersLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, FeeTierRow[]>(
+  return new DataLoader<string, FeeTierRow[]>(
     async (scheduleIds) => {
       const rows = await parent.prisma.orm.FeeTier.where((t) =>
         t.feeScheduleId.in(uniq(scheduleIds))

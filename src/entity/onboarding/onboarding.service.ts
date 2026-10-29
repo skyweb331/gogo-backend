@@ -144,7 +144,7 @@ export class OnboardingService {
         type,
         endorsements: ENDORSEMENTS,
         redirectUri: redirectUri(),
-        idempotencyKey: `kyc-link-${customer.id}-${type}-${createHash('sha256')
+        idempotencyKey: `kyc-link-${customer.legacyId ?? customer.id}-${type}-${createHash('sha256')
           .update(`${user.name}\n${user.email}`)
           .digest('hex')
           .slice(0, 16)}`,
@@ -225,7 +225,7 @@ export class OnboardingService {
    * After approval: generated wallets (payout defaults to Base), custodial wallet,
    * virtual accounts. Every step is idempotent, so the mutation and the job can race.
    */
-  async complete(customerId: number): Promise<CustomerRow> {
+  async complete(customerId: string): Promise<CustomerRow> {
     let customer = await this.customers.getById(customerId);
     if (!customer) throw new AppError('Customer not found');
     if (customer.status === CustomerStatus.Suspended)

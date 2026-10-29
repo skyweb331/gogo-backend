@@ -1,0 +1,1686 @@
+[
+  {
+    "id": "data.uuid_ids.convert",
+    "label": "Convert integer ids to UUIDv7, keeping old ids in legacyId",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "users.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "users",
+          "integer"
+        ]
+      },
+      {
+        "description": "customers.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "customers",
+          "integer"
+        ]
+      },
+      {
+        "description": "one_time_codes.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "one_time_codes",
+          "integer"
+        ]
+      },
+      {
+        "description": "wallets.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "wallets",
+          "integer"
+        ]
+      },
+      {
+        "description": "wallet_keys.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "wallet_keys",
+          "integer"
+        ]
+      },
+      {
+        "description": "key_vault_canaries.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "key_vault_canaries",
+          "integer"
+        ]
+      },
+      {
+        "description": "custodial_wallets.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "custodial_wallets",
+          "integer"
+        ]
+      },
+      {
+        "description": "virtual_accounts.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "virtual_accounts",
+          "integer"
+        ]
+      },
+      {
+        "description": "transactions.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "transactions",
+          "integer"
+        ]
+      },
+      {
+        "description": "transaction_events.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "transaction_events",
+          "integer"
+        ]
+      },
+      {
+        "description": "monthly_volumes.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "monthly_volumes",
+          "integer"
+        ]
+      },
+      {
+        "description": "fee_schedules.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "fee_schedules",
+          "integer"
+        ]
+      },
+      {
+        "description": "fee_tiers.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "fee_tiers",
+          "integer"
+        ]
+      },
+      {
+        "description": "support_tickets.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "support_tickets",
+          "integer"
+        ]
+      },
+      {
+        "description": "support_messages.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "support_messages",
+          "integer"
+        ]
+      },
+      {
+        "description": "audit_logs.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "audit_logs",
+          "integer"
+        ]
+      },
+      {
+        "description": "webhook_events.id is integer",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "webhook_events",
+          "integer"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create temporary UUIDv7 helper",
+        "sql": "CREATE FUNCTION \"public\".\"nxpay_tmp_uuid7\"(ts timestamptz, seq bigint) RETURNS uuid\nLANGUAGE sql VOLATILE AS $$\n  SELECT (lpad(to_hex(floor(extract(epoch FROM ts) * 1000)::bigint), 12, '0')\n    || '7' || lpad(to_hex(seq % 4096), 3, '0')\n    || to_hex(8 + floor(random() * 4)::int)\n    || substr(replace(gen_random_uuid()::text, '-', ''), 1, 15))::uuid\n$$"
+      },
+      {
+        "description": "create temporary reference helper",
+        "sql": "CREATE FUNCTION \"public\".\"nxpay_tmp_reference\"(prefix text) RETURNS text\nLANGUAGE sql VOLATILE AS $$\n  SELECT prefix || string_agg(substr('0123456789ABCDEFGHJKMNPQRSTVWXYZ', get_byte(b, i) % 32 + 1, 1), '' ORDER BY i)\n  FROM (SELECT uuid_send(gen_random_uuid()) AS b) r, unnest(ARRAY[0, 1, 2, 3, 4, 5, 10, 11]) AS i\n$$"
+      },
+      {
+        "description": "add new id to users",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to customers",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to one_time_codes",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to wallets",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to wallet_keys",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to key_vault_canaries",
+        "sql": "ALTER TABLE \"public\".\"key_vault_canaries\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to custodial_wallets",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to virtual_accounts",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to transactions",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to transaction_events",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to monthly_volumes",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to fee_schedules",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to fee_tiers",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to support_tickets",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to support_messages",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to audit_logs",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "add new id to webhook_events",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ADD COLUMN \"_uuid\" uuid"
+      },
+      {
+        "description": "fill new ids of users",
+        "sql": "UPDATE \"public\".\"users\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of customers",
+        "sql": "UPDATE \"public\".\"customers\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of one_time_codes",
+        "sql": "UPDATE \"public\".\"one_time_codes\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of wallets",
+        "sql": "UPDATE \"public\".\"wallets\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of wallet_keys",
+        "sql": "UPDATE \"public\".\"wallet_keys\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of key_vault_canaries",
+        "sql": "UPDATE \"public\".\"key_vault_canaries\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of custodial_wallets",
+        "sql": "UPDATE \"public\".\"custodial_wallets\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of virtual_accounts",
+        "sql": "UPDATE \"public\".\"virtual_accounts\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of transactions",
+        "sql": "UPDATE \"public\".\"transactions\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of transaction_events",
+        "sql": "UPDATE \"public\".\"transaction_events\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of monthly_volumes",
+        "sql": "UPDATE \"public\".\"monthly_volumes\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of fee_schedules",
+        "sql": "UPDATE \"public\".\"fee_schedules\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of fee_tiers",
+        "sql": "UPDATE \"public\".\"fee_tiers\" AS x SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(s.\"createdAt\", x.\"id\")\nFROM \"public\".\"fee_schedules\" AS s WHERE s.\"id\" = x.\"feeScheduleId\""
+      },
+      {
+        "description": "fill new ids of support_tickets",
+        "sql": "UPDATE \"public\".\"support_tickets\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of support_messages",
+        "sql": "UPDATE \"public\".\"support_messages\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of audit_logs",
+        "sql": "UPDATE \"public\".\"audit_logs\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "fill new ids of webhook_events",
+        "sql": "UPDATE \"public\".\"webhook_events\" SET \"_uuid\" = \"public\".\"nxpay_tmp_uuid7\"(\"createdAt\", \"id\")"
+      },
+      {
+        "description": "keep old ids of users",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of users",
+        "sql": "UPDATE \"public\".\"users\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "keep old ids of customers",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of customers",
+        "sql": "UPDATE \"public\".\"customers\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "keep old ids of wallets",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of wallets",
+        "sql": "UPDATE \"public\".\"wallets\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "keep old ids of transactions",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of transactions",
+        "sql": "UPDATE \"public\".\"transactions\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "keep old ids of fee_schedules",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of fee_schedules",
+        "sql": "UPDATE \"public\".\"fee_schedules\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "keep old ids of support_tickets",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of support_tickets",
+        "sql": "UPDATE \"public\".\"support_tickets\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "keep old ids of webhook_events",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ADD COLUMN \"legacyId\" int4"
+      },
+      {
+        "description": "copy old ids of webhook_events",
+        "sql": "UPDATE \"public\".\"webhook_events\" SET \"legacyId\" = \"id\""
+      },
+      {
+        "description": "add reference to transactions",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD COLUMN \"reference\" text"
+      },
+      {
+        "description": "fill references of transactions",
+        "sql": "UPDATE \"public\".\"transactions\" SET \"reference\" = \"public\".\"nxpay_tmp_reference\"('NXP-')"
+      },
+      {
+        "description": "require references of transactions",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ALTER COLUMN \"reference\" SET NOT NULL"
+      },
+      {
+        "description": "add reference to support_tickets",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD COLUMN \"reference\" text"
+      },
+      {
+        "description": "fill references of support_tickets",
+        "sql": "UPDATE \"public\".\"support_tickets\" SET \"reference\" = \"public\".\"nxpay_tmp_reference\"('SUP-')"
+      },
+      {
+        "description": "require references of support_tickets",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ALTER COLUMN \"reference\" SET NOT NULL"
+      },
+      {
+        "description": "remap audit entityId for User",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"users\" AS x WHERE a.\"entity\" = 'User' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for Customer",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"customers\" AS x WHERE a.\"entity\" = 'Customer' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for Wallet",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"wallets\" AS x WHERE a.\"entity\" = 'Wallet' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for Transaction",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"transactions\" AS x WHERE a.\"entity\" = 'Transaction' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for VirtualAccount",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"virtual_accounts\" AS x WHERE a.\"entity\" = 'VirtualAccount' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for FeeSchedule",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"fee_schedules\" AS x WHERE a.\"entity\" = 'FeeSchedule' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for SupportTicket",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"support_tickets\" AS x WHERE a.\"entity\" = 'SupportTicket' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap audit entityId for WebhookEvent",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS a SET \"entityId\" = x.\"_uuid\"::text\nFROM \"public\".\"webhook_events\" AS x WHERE a.\"entity\" = 'WebhookEvent' AND a.\"entityId\" = x.\"id\"::text"
+      },
+      {
+        "description": "remap transactions.feeBreakdown.scheduleId",
+        "sql": "UPDATE \"public\".\"transactions\" AS x SET \"feeBreakdown\" = jsonb_set(x.\"feeBreakdown\", '{scheduleId}', to_jsonb(y.\"_uuid\"::text))\nFROM \"public\".\"fee_schedules\" AS y\nWHERE jsonb_typeof(x.\"feeBreakdown\") = 'object' AND jsonb_typeof(x.\"feeBreakdown\" -> 'scheduleId') = 'number'\n  AND y.\"id\" = (x.\"feeBreakdown\" ->> 'scheduleId')::int"
+      },
+      {
+        "description": "remap transactions.destinationWalletSnapshot.walletId",
+        "sql": "UPDATE \"public\".\"transactions\" AS x SET \"destinationWalletSnapshot\" = jsonb_set(x.\"destinationWalletSnapshot\", '{walletId}', to_jsonb(y.\"_uuid\"::text))\nFROM \"public\".\"wallets\" AS y\nWHERE jsonb_typeof(x.\"destinationWalletSnapshot\") = 'object' AND jsonb_typeof(x.\"destinationWalletSnapshot\" -> 'walletId') = 'number'\n  AND y.\"id\" = (x.\"destinationWalletSnapshot\" ->> 'walletId')::int"
+      },
+      {
+        "description": "remap transaction_events.payload.scheduleId",
+        "sql": "UPDATE \"public\".\"transaction_events\" AS x SET \"payload\" = jsonb_set(x.\"payload\", '{scheduleId}', to_jsonb(y.\"_uuid\"::text))\nFROM \"public\".\"fee_schedules\" AS y\nWHERE jsonb_typeof(x.\"payload\") = 'object' AND jsonb_typeof(x.\"payload\" -> 'scheduleId') = 'number'\n  AND y.\"id\" = (x.\"payload\" ->> 'scheduleId')::int"
+      },
+      {
+        "description": "remap transaction_events.payload.by",
+        "sql": "UPDATE \"public\".\"transaction_events\" AS x SET \"payload\" = jsonb_set(x.\"payload\", '{by}', to_jsonb(y.\"_uuid\"::text))\nFROM \"public\".\"users\" AS y\nWHERE jsonb_typeof(x.\"payload\") = 'object' AND jsonb_typeof(x.\"payload\" -> 'by') = 'number'\n  AND y.\"id\" = (x.\"payload\" ->> 'by')::int"
+      },
+      {
+        "description": "remap one_time_codes.meta.walletId",
+        "sql": "UPDATE \"public\".\"one_time_codes\" AS x SET \"meta\" = jsonb_set(x.\"meta\", '{walletId}', to_jsonb(y.\"_uuid\"::text))\nFROM \"public\".\"wallets\" AS y\nWHERE jsonb_typeof(x.\"meta\") = 'object' AND jsonb_typeof(x.\"meta\" -> 'walletId') = 'number'\n  AND y.\"id\" = (x.\"meta\" ->> 'walletId')::int"
+      },
+      {
+        "description": "add new customers.userId",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"_userId\" uuid"
+      },
+      {
+        "description": "fill new customers.userId",
+        "sql": "UPDATE \"public\".\"customers\" AS x SET \"_userId\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"userId\""
+      },
+      {
+        "description": "add new customers.payoutWalletId",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD COLUMN \"_payoutWalletId\" uuid"
+      },
+      {
+        "description": "fill new customers.payoutWalletId",
+        "sql": "UPDATE \"public\".\"customers\" AS x SET \"_payoutWalletId\" = y.\"_uuid\" FROM \"public\".\"wallets\" AS y WHERE y.\"id\" = x.\"payoutWalletId\""
+      },
+      {
+        "description": "add new one_time_codes.userId",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" ADD COLUMN \"_userId\" uuid"
+      },
+      {
+        "description": "fill new one_time_codes.userId",
+        "sql": "UPDATE \"public\".\"one_time_codes\" AS x SET \"_userId\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"userId\""
+      },
+      {
+        "description": "add new wallets.customerId",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ADD COLUMN \"_customerId\" uuid"
+      },
+      {
+        "description": "fill new wallets.customerId",
+        "sql": "UPDATE \"public\".\"wallets\" AS x SET \"_customerId\" = y.\"_uuid\" FROM \"public\".\"customers\" AS y WHERE y.\"id\" = x.\"customerId\""
+      },
+      {
+        "description": "add new wallet_keys.walletId",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" ADD COLUMN \"_walletId\" uuid"
+      },
+      {
+        "description": "fill new wallet_keys.walletId",
+        "sql": "UPDATE \"public\".\"wallet_keys\" AS x SET \"_walletId\" = y.\"_uuid\" FROM \"public\".\"wallets\" AS y WHERE y.\"id\" = x.\"walletId\""
+      },
+      {
+        "description": "add new custodial_wallets.customerId",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ADD COLUMN \"_customerId\" uuid"
+      },
+      {
+        "description": "fill new custodial_wallets.customerId",
+        "sql": "UPDATE \"public\".\"custodial_wallets\" AS x SET \"_customerId\" = y.\"_uuid\" FROM \"public\".\"customers\" AS y WHERE y.\"id\" = x.\"customerId\""
+      },
+      {
+        "description": "add new virtual_accounts.customerId",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ADD COLUMN \"_customerId\" uuid"
+      },
+      {
+        "description": "fill new virtual_accounts.customerId",
+        "sql": "UPDATE \"public\".\"virtual_accounts\" AS x SET \"_customerId\" = y.\"_uuid\" FROM \"public\".\"customers\" AS y WHERE y.\"id\" = x.\"customerId\""
+      },
+      {
+        "description": "add new virtual_accounts.custodialWalletId",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ADD COLUMN \"_custodialWalletId\" uuid"
+      },
+      {
+        "description": "fill new virtual_accounts.custodialWalletId",
+        "sql": "UPDATE \"public\".\"virtual_accounts\" AS x SET \"_custodialWalletId\" = y.\"_uuid\" FROM \"public\".\"custodial_wallets\" AS y WHERE y.\"id\" = x.\"custodialWalletId\""
+      },
+      {
+        "description": "add new transactions.customerId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD COLUMN \"_customerId\" uuid"
+      },
+      {
+        "description": "fill new transactions.customerId",
+        "sql": "UPDATE \"public\".\"transactions\" AS x SET \"_customerId\" = y.\"_uuid\" FROM \"public\".\"customers\" AS y WHERE y.\"id\" = x.\"customerId\""
+      },
+      {
+        "description": "add new transactions.virtualAccountId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD COLUMN \"_virtualAccountId\" uuid"
+      },
+      {
+        "description": "fill new transactions.virtualAccountId",
+        "sql": "UPDATE \"public\".\"transactions\" AS x SET \"_virtualAccountId\" = y.\"_uuid\" FROM \"public\".\"virtual_accounts\" AS y WHERE y.\"id\" = x.\"virtualAccountId\""
+      },
+      {
+        "description": "add new transactions.feeScheduleId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD COLUMN \"_feeScheduleId\" uuid"
+      },
+      {
+        "description": "fill new transactions.feeScheduleId",
+        "sql": "UPDATE \"public\".\"transactions\" AS x SET \"_feeScheduleId\" = y.\"_uuid\" FROM \"public\".\"fee_schedules\" AS y WHERE y.\"id\" = x.\"feeScheduleId\""
+      },
+      {
+        "description": "add new transaction_events.transactionId",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" ADD COLUMN \"_transactionId\" uuid"
+      },
+      {
+        "description": "fill new transaction_events.transactionId",
+        "sql": "UPDATE \"public\".\"transaction_events\" AS x SET \"_transactionId\" = y.\"_uuid\" FROM \"public\".\"transactions\" AS y WHERE y.\"id\" = x.\"transactionId\""
+      },
+      {
+        "description": "add new monthly_volumes.customerId",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" ADD COLUMN \"_customerId\" uuid"
+      },
+      {
+        "description": "fill new monthly_volumes.customerId",
+        "sql": "UPDATE \"public\".\"monthly_volumes\" AS x SET \"_customerId\" = y.\"_uuid\" FROM \"public\".\"customers\" AS y WHERE y.\"id\" = x.\"customerId\""
+      },
+      {
+        "description": "add new fee_schedules.createdById",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ADD COLUMN \"_createdById\" uuid"
+      },
+      {
+        "description": "fill new fee_schedules.createdById",
+        "sql": "UPDATE \"public\".\"fee_schedules\" AS x SET \"_createdById\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"createdById\""
+      },
+      {
+        "description": "add new fee_schedules.publishedById",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ADD COLUMN \"_publishedById\" uuid"
+      },
+      {
+        "description": "fill new fee_schedules.publishedById",
+        "sql": "UPDATE \"public\".\"fee_schedules\" AS x SET \"_publishedById\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"publishedById\""
+      },
+      {
+        "description": "add new fee_tiers.feeScheduleId",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" ADD COLUMN \"_feeScheduleId\" uuid"
+      },
+      {
+        "description": "fill new fee_tiers.feeScheduleId",
+        "sql": "UPDATE \"public\".\"fee_tiers\" AS x SET \"_feeScheduleId\" = y.\"_uuid\" FROM \"public\".\"fee_schedules\" AS y WHERE y.\"id\" = x.\"feeScheduleId\""
+      },
+      {
+        "description": "add new support_tickets.customerId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD COLUMN \"_customerId\" uuid"
+      },
+      {
+        "description": "fill new support_tickets.customerId",
+        "sql": "UPDATE \"public\".\"support_tickets\" AS x SET \"_customerId\" = y.\"_uuid\" FROM \"public\".\"customers\" AS y WHERE y.\"id\" = x.\"customerId\""
+      },
+      {
+        "description": "add new support_tickets.assigneeId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD COLUMN \"_assigneeId\" uuid"
+      },
+      {
+        "description": "fill new support_tickets.assigneeId",
+        "sql": "UPDATE \"public\".\"support_tickets\" AS x SET \"_assigneeId\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"assigneeId\""
+      },
+      {
+        "description": "add new support_messages.ticketId",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ADD COLUMN \"_ticketId\" uuid"
+      },
+      {
+        "description": "fill new support_messages.ticketId",
+        "sql": "UPDATE \"public\".\"support_messages\" AS x SET \"_ticketId\" = y.\"_uuid\" FROM \"public\".\"support_tickets\" AS y WHERE y.\"id\" = x.\"ticketId\""
+      },
+      {
+        "description": "add new support_messages.authorId",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ADD COLUMN \"_authorId\" uuid"
+      },
+      {
+        "description": "fill new support_messages.authorId",
+        "sql": "UPDATE \"public\".\"support_messages\" AS x SET \"_authorId\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"authorId\""
+      },
+      {
+        "description": "add new audit_logs.actorId",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" ADD COLUMN \"_actorId\" uuid"
+      },
+      {
+        "description": "fill new audit_logs.actorId",
+        "sql": "UPDATE \"public\".\"audit_logs\" AS x SET \"_actorId\" = y.\"_uuid\" FROM \"public\".\"users\" AS y WHERE y.\"id\" = x.\"actorId\""
+      },
+      {
+        "description": "drop customers_userId_fkey",
+        "sql": "ALTER TABLE \"public\".\"customers\" DROP CONSTRAINT \"customers_userId_fkey\""
+      },
+      {
+        "description": "drop one_time_codes_userId_fkey",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" DROP CONSTRAINT \"one_time_codes_userId_fkey\""
+      },
+      {
+        "description": "drop wallets_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"wallets\" DROP CONSTRAINT \"wallets_customerId_fkey\""
+      },
+      {
+        "description": "drop wallet_keys_walletId_fkey",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" DROP CONSTRAINT \"wallet_keys_walletId_fkey\""
+      },
+      {
+        "description": "drop custodial_wallets_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" DROP CONSTRAINT \"custodial_wallets_customerId_fkey\""
+      },
+      {
+        "description": "drop virtual_accounts_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" DROP CONSTRAINT \"virtual_accounts_customerId_fkey\""
+      },
+      {
+        "description": "drop virtual_accounts_custodialWalletId_fkey",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" DROP CONSTRAINT \"virtual_accounts_custodialWalletId_fkey\""
+      },
+      {
+        "description": "drop transactions_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP CONSTRAINT \"transactions_customerId_fkey\""
+      },
+      {
+        "description": "drop transactions_virtualAccountId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP CONSTRAINT \"transactions_virtualAccountId_fkey\""
+      },
+      {
+        "description": "drop transactions_feeScheduleId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP CONSTRAINT \"transactions_feeScheduleId_fkey\""
+      },
+      {
+        "description": "drop transaction_events_transactionId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" DROP CONSTRAINT \"transaction_events_transactionId_fkey\""
+      },
+      {
+        "description": "drop monthly_volumes_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" DROP CONSTRAINT \"monthly_volumes_customerId_fkey\""
+      },
+      {
+        "description": "drop fee_tiers_feeScheduleId_fkey",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" DROP CONSTRAINT \"fee_tiers_feeScheduleId_fkey\""
+      },
+      {
+        "description": "drop support_tickets_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" DROP CONSTRAINT \"support_tickets_customerId_fkey\""
+      },
+      {
+        "description": "drop support_messages_ticketId_fkey",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" DROP CONSTRAINT \"support_messages_ticketId_fkey\""
+      },
+      {
+        "description": "drop support_messages_authorId_fkey",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" DROP CONSTRAINT \"support_messages_authorId_fkey\""
+      },
+      {
+        "description": "retype customers.userId",
+        "sql": "ALTER TABLE \"public\".\"customers\" ALTER COLUMN \"userId\" TYPE uuid USING \"_userId\""
+      },
+      {
+        "description": "drop new customers.userId",
+        "sql": "ALTER TABLE \"public\".\"customers\" DROP COLUMN \"_userId\""
+      },
+      {
+        "description": "retype customers.payoutWalletId",
+        "sql": "ALTER TABLE \"public\".\"customers\" ALTER COLUMN \"payoutWalletId\" TYPE uuid USING \"_payoutWalletId\""
+      },
+      {
+        "description": "drop new customers.payoutWalletId",
+        "sql": "ALTER TABLE \"public\".\"customers\" DROP COLUMN \"_payoutWalletId\""
+      },
+      {
+        "description": "retype one_time_codes.userId",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" ALTER COLUMN \"userId\" TYPE uuid USING \"_userId\""
+      },
+      {
+        "description": "drop new one_time_codes.userId",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" DROP COLUMN \"_userId\""
+      },
+      {
+        "description": "retype wallets.customerId",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ALTER COLUMN \"customerId\" TYPE uuid USING \"_customerId\""
+      },
+      {
+        "description": "drop new wallets.customerId",
+        "sql": "ALTER TABLE \"public\".\"wallets\" DROP COLUMN \"_customerId\""
+      },
+      {
+        "description": "retype wallet_keys.walletId",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" ALTER COLUMN \"walletId\" TYPE uuid USING \"_walletId\""
+      },
+      {
+        "description": "drop new wallet_keys.walletId",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" DROP COLUMN \"_walletId\""
+      },
+      {
+        "description": "retype custodial_wallets.customerId",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ALTER COLUMN \"customerId\" TYPE uuid USING \"_customerId\""
+      },
+      {
+        "description": "drop new custodial_wallets.customerId",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" DROP COLUMN \"_customerId\""
+      },
+      {
+        "description": "retype virtual_accounts.customerId",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ALTER COLUMN \"customerId\" TYPE uuid USING \"_customerId\""
+      },
+      {
+        "description": "drop new virtual_accounts.customerId",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" DROP COLUMN \"_customerId\""
+      },
+      {
+        "description": "retype virtual_accounts.custodialWalletId",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ALTER COLUMN \"custodialWalletId\" TYPE uuid USING \"_custodialWalletId\""
+      },
+      {
+        "description": "drop new virtual_accounts.custodialWalletId",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" DROP COLUMN \"_custodialWalletId\""
+      },
+      {
+        "description": "retype transactions.customerId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ALTER COLUMN \"customerId\" TYPE uuid USING \"_customerId\""
+      },
+      {
+        "description": "drop new transactions.customerId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP COLUMN \"_customerId\""
+      },
+      {
+        "description": "retype transactions.virtualAccountId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ALTER COLUMN \"virtualAccountId\" TYPE uuid USING \"_virtualAccountId\""
+      },
+      {
+        "description": "drop new transactions.virtualAccountId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP COLUMN \"_virtualAccountId\""
+      },
+      {
+        "description": "retype transactions.feeScheduleId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ALTER COLUMN \"feeScheduleId\" TYPE uuid USING \"_feeScheduleId\""
+      },
+      {
+        "description": "drop new transactions.feeScheduleId",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP COLUMN \"_feeScheduleId\""
+      },
+      {
+        "description": "retype transaction_events.transactionId",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" ALTER COLUMN \"transactionId\" TYPE uuid USING \"_transactionId\""
+      },
+      {
+        "description": "drop new transaction_events.transactionId",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" DROP COLUMN \"_transactionId\""
+      },
+      {
+        "description": "retype monthly_volumes.customerId",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" ALTER COLUMN \"customerId\" TYPE uuid USING \"_customerId\""
+      },
+      {
+        "description": "drop new monthly_volumes.customerId",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" DROP COLUMN \"_customerId\""
+      },
+      {
+        "description": "retype fee_schedules.createdById",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ALTER COLUMN \"createdById\" TYPE uuid USING \"_createdById\""
+      },
+      {
+        "description": "drop new fee_schedules.createdById",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" DROP COLUMN \"_createdById\""
+      },
+      {
+        "description": "retype fee_schedules.publishedById",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ALTER COLUMN \"publishedById\" TYPE uuid USING \"_publishedById\""
+      },
+      {
+        "description": "drop new fee_schedules.publishedById",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" DROP COLUMN \"_publishedById\""
+      },
+      {
+        "description": "retype fee_tiers.feeScheduleId",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" ALTER COLUMN \"feeScheduleId\" TYPE uuid USING \"_feeScheduleId\""
+      },
+      {
+        "description": "drop new fee_tiers.feeScheduleId",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" DROP COLUMN \"_feeScheduleId\""
+      },
+      {
+        "description": "retype support_tickets.customerId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ALTER COLUMN \"customerId\" TYPE uuid USING \"_customerId\""
+      },
+      {
+        "description": "drop new support_tickets.customerId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" DROP COLUMN \"_customerId\""
+      },
+      {
+        "description": "retype support_tickets.assigneeId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ALTER COLUMN \"assigneeId\" TYPE uuid USING \"_assigneeId\""
+      },
+      {
+        "description": "drop new support_tickets.assigneeId",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" DROP COLUMN \"_assigneeId\""
+      },
+      {
+        "description": "retype support_messages.ticketId",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ALTER COLUMN \"ticketId\" TYPE uuid USING \"_ticketId\""
+      },
+      {
+        "description": "drop new support_messages.ticketId",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" DROP COLUMN \"_ticketId\""
+      },
+      {
+        "description": "retype support_messages.authorId",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ALTER COLUMN \"authorId\" TYPE uuid USING \"_authorId\""
+      },
+      {
+        "description": "drop new support_messages.authorId",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" DROP COLUMN \"_authorId\""
+      },
+      {
+        "description": "retype audit_logs.actorId",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" ALTER COLUMN \"actorId\" TYPE uuid USING \"_actorId\""
+      },
+      {
+        "description": "drop new audit_logs.actorId",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" DROP COLUMN \"_actorId\""
+      },
+      {
+        "description": "drop id default of users",
+        "sql": "ALTER TABLE \"public\".\"users\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype users.id",
+        "sql": "ALTER TABLE \"public\".\"users\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of users",
+        "sql": "ALTER TABLE \"public\".\"users\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of users",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"users_id_seq\""
+      },
+      {
+        "description": "drop id default of customers",
+        "sql": "ALTER TABLE \"public\".\"customers\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype customers.id",
+        "sql": "ALTER TABLE \"public\".\"customers\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of customers",
+        "sql": "ALTER TABLE \"public\".\"customers\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of customers",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"customers_id_seq\""
+      },
+      {
+        "description": "drop id default of one_time_codes",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype one_time_codes.id",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of one_time_codes",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of one_time_codes",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"one_time_codes_id_seq\""
+      },
+      {
+        "description": "drop id default of wallets",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype wallets.id",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of wallets",
+        "sql": "ALTER TABLE \"public\".\"wallets\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of wallets",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"wallets_id_seq\""
+      },
+      {
+        "description": "drop id default of wallet_keys",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype wallet_keys.id",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of wallet_keys",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of wallet_keys",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"wallet_keys_id_seq\""
+      },
+      {
+        "description": "drop id default of key_vault_canaries",
+        "sql": "ALTER TABLE \"public\".\"key_vault_canaries\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype key_vault_canaries.id",
+        "sql": "ALTER TABLE \"public\".\"key_vault_canaries\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of key_vault_canaries",
+        "sql": "ALTER TABLE \"public\".\"key_vault_canaries\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of key_vault_canaries",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"key_vault_canaries_id_seq\""
+      },
+      {
+        "description": "drop id default of custodial_wallets",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype custodial_wallets.id",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of custodial_wallets",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of custodial_wallets",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"custodial_wallets_id_seq\""
+      },
+      {
+        "description": "drop id default of virtual_accounts",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype virtual_accounts.id",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of virtual_accounts",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of virtual_accounts",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"virtual_accounts_id_seq\""
+      },
+      {
+        "description": "drop id default of transactions",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype transactions.id",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of transactions",
+        "sql": "ALTER TABLE \"public\".\"transactions\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of transactions",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"transactions_id_seq\""
+      },
+      {
+        "description": "drop id default of transaction_events",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype transaction_events.id",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of transaction_events",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of transaction_events",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"transaction_events_id_seq\""
+      },
+      {
+        "description": "drop id default of monthly_volumes",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype monthly_volumes.id",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of monthly_volumes",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of monthly_volumes",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"monthly_volumes_id_seq\""
+      },
+      {
+        "description": "drop id default of fee_schedules",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype fee_schedules.id",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of fee_schedules",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of fee_schedules",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"fee_schedules_id_seq\""
+      },
+      {
+        "description": "drop id default of fee_tiers",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype fee_tiers.id",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of fee_tiers",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of fee_tiers",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"fee_tiers_id_seq\""
+      },
+      {
+        "description": "drop id default of support_tickets",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype support_tickets.id",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of support_tickets",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of support_tickets",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"support_tickets_id_seq\""
+      },
+      {
+        "description": "drop id default of support_messages",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype support_messages.id",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of support_messages",
+        "sql": "ALTER TABLE \"public\".\"support_messages\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of support_messages",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"support_messages_id_seq\""
+      },
+      {
+        "description": "drop id default of audit_logs",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype audit_logs.id",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of audit_logs",
+        "sql": "ALTER TABLE \"public\".\"audit_logs\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of audit_logs",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"audit_logs_id_seq\""
+      },
+      {
+        "description": "drop id default of webhook_events",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ALTER COLUMN \"id\" DROP DEFAULT"
+      },
+      {
+        "description": "retype webhook_events.id",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ALTER COLUMN \"id\" TYPE uuid USING \"_uuid\""
+      },
+      {
+        "description": "drop new id of webhook_events",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" DROP COLUMN \"_uuid\""
+      },
+      {
+        "description": "drop id sequence of webhook_events",
+        "sql": "DROP SEQUENCE IF EXISTS \"public\".\"webhook_events_id_seq\""
+      },
+      {
+        "description": "add customers_userId_fkey",
+        "sql": "ALTER TABLE \"public\".\"customers\"\nADD CONSTRAINT \"customers_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add one_time_codes_userId_fkey",
+        "sql": "ALTER TABLE \"public\".\"one_time_codes\"\nADD CONSTRAINT \"one_time_codes_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add wallets_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"wallets\"\nADD CONSTRAINT \"wallets_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add wallet_keys_walletId_fkey",
+        "sql": "ALTER TABLE \"public\".\"wallet_keys\"\nADD CONSTRAINT \"wallet_keys_walletId_fkey\"\nFOREIGN KEY (\"walletId\")\nREFERENCES \"public\".\"wallets\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add custodial_wallets_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"custodial_wallets\"\nADD CONSTRAINT \"custodial_wallets_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add virtual_accounts_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\"\nADD CONSTRAINT \"virtual_accounts_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add virtual_accounts_custodialWalletId_fkey",
+        "sql": "ALTER TABLE \"public\".\"virtual_accounts\"\nADD CONSTRAINT \"virtual_accounts_custodialWalletId_fkey\"\nFOREIGN KEY (\"custodialWalletId\")\nREFERENCES \"public\".\"custodial_wallets\" (\"id\")\nON DELETE RESTRICT"
+      },
+      {
+        "description": "add transactions_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transactions\"\nADD CONSTRAINT \"transactions_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE RESTRICT"
+      },
+      {
+        "description": "add transactions_virtualAccountId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transactions\"\nADD CONSTRAINT \"transactions_virtualAccountId_fkey\"\nFOREIGN KEY (\"virtualAccountId\")\nREFERENCES \"public\".\"virtual_accounts\" (\"id\")\nON DELETE SET NULL"
+      },
+      {
+        "description": "add transactions_feeScheduleId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transactions\"\nADD CONSTRAINT \"transactions_feeScheduleId_fkey\"\nFOREIGN KEY (\"feeScheduleId\")\nREFERENCES \"public\".\"fee_schedules\" (\"id\")\nON DELETE RESTRICT"
+      },
+      {
+        "description": "add transaction_events_transactionId_fkey",
+        "sql": "ALTER TABLE \"public\".\"transaction_events\"\nADD CONSTRAINT \"transaction_events_transactionId_fkey\"\nFOREIGN KEY (\"transactionId\")\nREFERENCES \"public\".\"transactions\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add monthly_volumes_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"monthly_volumes\"\nADD CONSTRAINT \"monthly_volumes_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add fee_tiers_feeScheduleId_fkey",
+        "sql": "ALTER TABLE \"public\".\"fee_tiers\"\nADD CONSTRAINT \"fee_tiers_feeScheduleId_fkey\"\nFOREIGN KEY (\"feeScheduleId\")\nREFERENCES \"public\".\"fee_schedules\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add support_tickets_customerId_fkey",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\"\nADD CONSTRAINT \"support_tickets_customerId_fkey\"\nFOREIGN KEY (\"customerId\")\nREFERENCES \"public\".\"customers\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add support_messages_ticketId_fkey",
+        "sql": "ALTER TABLE \"public\".\"support_messages\"\nADD CONSTRAINT \"support_messages_ticketId_fkey\"\nFOREIGN KEY (\"ticketId\")\nREFERENCES \"public\".\"support_tickets\" (\"id\")\nON DELETE CASCADE"
+      },
+      {
+        "description": "add support_messages_authorId_fkey",
+        "sql": "ALTER TABLE \"public\".\"support_messages\"\nADD CONSTRAINT \"support_messages_authorId_fkey\"\nFOREIGN KEY (\"authorId\")\nREFERENCES \"public\".\"users\" (\"id\")\nON DELETE RESTRICT"
+      },
+      {
+        "description": "drop temporary UUIDv7 helper",
+        "sql": "DROP FUNCTION \"public\".\"nxpay_tmp_uuid7\"(timestamptz, bigint)"
+      },
+      {
+        "description": "drop temporary reference helper",
+        "sql": "DROP FUNCTION \"public\".\"nxpay_tmp_reference\"(text)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "users.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "users",
+          "uuid"
+        ]
+      },
+      {
+        "description": "customers.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "customers",
+          "uuid"
+        ]
+      },
+      {
+        "description": "one_time_codes.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "one_time_codes",
+          "uuid"
+        ]
+      },
+      {
+        "description": "wallets.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "wallets",
+          "uuid"
+        ]
+      },
+      {
+        "description": "wallet_keys.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "wallet_keys",
+          "uuid"
+        ]
+      },
+      {
+        "description": "key_vault_canaries.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "key_vault_canaries",
+          "uuid"
+        ]
+      },
+      {
+        "description": "custodial_wallets.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "custodial_wallets",
+          "uuid"
+        ]
+      },
+      {
+        "description": "virtual_accounts.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "virtual_accounts",
+          "uuid"
+        ]
+      },
+      {
+        "description": "transactions.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "transactions",
+          "uuid"
+        ]
+      },
+      {
+        "description": "transaction_events.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "transaction_events",
+          "uuid"
+        ]
+      },
+      {
+        "description": "monthly_volumes.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "monthly_volumes",
+          "uuid"
+        ]
+      },
+      {
+        "description": "fee_schedules.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "fee_schedules",
+          "uuid"
+        ]
+      },
+      {
+        "description": "fee_tiers.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "fee_tiers",
+          "uuid"
+        ]
+      },
+      {
+        "description": "support_tickets.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "support_tickets",
+          "uuid"
+        ]
+      },
+      {
+        "description": "support_messages.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "support_messages",
+          "uuid"
+        ]
+      },
+      {
+        "description": "audit_logs.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "audit_logs",
+          "uuid"
+        ]
+      },
+      {
+        "description": "webhook_events.id is uuid",
+        "sql": "SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = $1 AND column_name = 'id' AND data_type = $2) AS \"result\"",
+        "params": [
+          "webhook_events",
+          "uuid"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.customers.customers_legacyId_key",
+    "label": "Add unique constraint on \"customers\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "customers_legacyId_key",
+        "table": "customers"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"customers_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_legacyId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"customers_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"customers\" ADD CONSTRAINT \"customers_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"customers_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "customers_legacyId_key",
+          "public",
+          "\"public\".\"customers\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.fee_schedules.fee_schedules_legacyId_key",
+    "label": "Add unique constraint on \"fee_schedules\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "fee_schedules_legacyId_key",
+        "table": "fee_schedules"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"fee_schedules_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "fee_schedules_legacyId_key",
+          "public",
+          "\"public\".\"fee_schedules\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"fee_schedules_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"fee_schedules\" ADD CONSTRAINT \"fee_schedules_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"fee_schedules_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "fee_schedules_legacyId_key",
+          "public",
+          "\"public\".\"fee_schedules\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.support_tickets.support_tickets_legacyId_key",
+    "label": "Add unique constraint on \"support_tickets\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "support_tickets_legacyId_key",
+        "table": "support_tickets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"support_tickets_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_tickets_legacyId_key",
+          "public",
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"support_tickets_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD CONSTRAINT \"support_tickets_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"support_tickets_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_tickets_legacyId_key",
+          "public",
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.support_tickets.support_tickets_reference_key",
+    "label": "Add unique constraint on \"support_tickets\" (reference)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "support_tickets_reference_key",
+        "table": "support_tickets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"support_tickets_reference_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_tickets_reference_key",
+          "public",
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"support_tickets_reference_key\"",
+        "sql": "ALTER TABLE \"public\".\"support_tickets\" ADD CONSTRAINT \"support_tickets_reference_key\" UNIQUE (\"reference\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"support_tickets_reference_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "support_tickets_reference_key",
+          "public",
+          "\"public\".\"support_tickets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.transactions.transactions_legacyId_key",
+    "label": "Add unique constraint on \"transactions\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "transactions_legacyId_key",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"transactions_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_legacyId_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"transactions_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD CONSTRAINT \"transactions_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"transactions_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_legacyId_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.transactions.transactions_reference_key",
+    "label": "Add unique constraint on \"transactions\" (reference)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "transactions_reference_key",
+        "table": "transactions"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"transactions_reference_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_reference_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"transactions_reference_key\"",
+        "sql": "ALTER TABLE \"public\".\"transactions\" ADD CONSTRAINT \"transactions_reference_key\" UNIQUE (\"reference\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"transactions_reference_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "transactions_reference_key",
+          "public",
+          "\"public\".\"transactions\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.users.users_legacyId_key",
+    "label": "Add unique constraint on \"users\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "users_legacyId_key",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"users_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_legacyId_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"users_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD CONSTRAINT \"users_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"users_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "users_legacyId_key",
+          "public",
+          "\"public\".\"users\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.wallets.wallets_legacyId_key",
+    "label": "Add unique constraint on \"wallets\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "wallets_legacyId_key",
+        "table": "wallets"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"wallets_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallets_legacyId_key",
+          "public",
+          "\"public\".\"wallets\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"wallets_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"wallets\" ADD CONSTRAINT \"wallets_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"wallets_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "wallets_legacyId_key",
+          "public",
+          "\"public\".\"wallets\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.webhook_events.webhook_events_legacyId_key",
+    "label": "Add unique constraint on \"webhook_events\" (legacyId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "webhook_events_legacyId_key",
+        "table": "webhook_events"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"webhook_events_legacyId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "webhook_events_legacyId_key",
+          "public",
+          "\"public\".\"webhook_events\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"webhook_events_legacyId_key\"",
+        "sql": "ALTER TABLE \"public\".\"webhook_events\" ADD CONSTRAINT \"webhook_events_legacyId_key\" UNIQUE (\"legacyId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"webhook_events_legacyId_key\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "webhook_events_legacyId_key",
+          "public",
+          "\"public\".\"webhook_events\""
+        ]
+      }
+    ]
+  }
+]

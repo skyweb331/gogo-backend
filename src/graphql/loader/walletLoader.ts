@@ -5,7 +5,7 @@ import { groupBy, indexBy, uniq } from './utils.js';
 import type { CustodialWalletRow, VirtualAccountRow, WalletRow } from '#src/service/prisma.js';
 
 export const walletLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, WalletRow | null>(
+  return new DataLoader<string, WalletRow | null>(
     async (ids) => {
       const rows = await parent.prisma.orm.Wallet.where((w) => w.id.in(uniq(ids))).all();
       return indexBy(ids, rows, (w) => w.id);
@@ -15,7 +15,7 @@ export const walletLoader = (parent: RootDataLoader) => {
 };
 
 export const walletsForCustomerLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, WalletRow[]>(
+  return new DataLoader<string, WalletRow[]>(
     async (customerIds) => {
       const rows = await parent.prisma.orm.Wallet.where((w) => w.customerId.in(uniq(customerIds)))
         .orderBy((w) => w.id.asc())
@@ -28,7 +28,7 @@ export const walletsForCustomerLoader = (parent: RootDataLoader) => {
 
 /** Wallet ids that still have a stored (encrypted) key. Never loads key material. */
 export const walletHasKeyLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, boolean>(
+  return new DataLoader<string, boolean>(
     async (walletIds) => {
       const rows = await parent.prisma.orm.WalletKey.where((k) => k.walletId.in(uniq(walletIds)))
         .select('walletId')
@@ -41,7 +41,7 @@ export const walletHasKeyLoader = (parent: RootDataLoader) => {
 };
 
 export const custodialWalletLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, CustodialWalletRow | null>(
+  return new DataLoader<string, CustodialWalletRow | null>(
     async (ids) => {
       const rows = await parent.prisma.orm.CustodialWallet.where((w) => w.id.in(uniq(ids))).all();
       return indexBy(ids, rows, (w) => w.id);
@@ -51,7 +51,7 @@ export const custodialWalletLoader = (parent: RootDataLoader) => {
 };
 
 export const virtualAccountLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, VirtualAccountRow | null>(
+  return new DataLoader<string, VirtualAccountRow | null>(
     async (ids) => {
       const rows = await parent.prisma.orm.VirtualAccount.where((v) => v.id.in(uniq(ids))).all();
       return indexBy(ids, rows, (v) => v.id);
@@ -61,7 +61,7 @@ export const virtualAccountLoader = (parent: RootDataLoader) => {
 };
 
 export const virtualAccountsForCustomerLoader = (parent: RootDataLoader) => {
-  return new DataLoader<number, VirtualAccountRow[]>(
+  return new DataLoader<string, VirtualAccountRow[]>(
     async (customerIds) => {
       const rows = await parent.prisma.orm.VirtualAccount.where((v) =>
         v.customerId.in(uniq(customerIds))

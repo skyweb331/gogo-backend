@@ -4,7 +4,7 @@ import {
   Authorized,
   Ctx,
   FieldResolver,
-  Int,
+  ID,
   Mutation,
   Query,
   Resolver,
@@ -47,7 +47,7 @@ export class WalletResolver {
   @Query(() => [Wallet])
   async wallets(
     @Ctx() ctx: Context,
-    @Arg('customerId', () => Int, { nullable: true }) customerId?: number,
+    @Arg('customerId', () => ID, { nullable: true }) customerId?: string,
     @Arg('includeArchived', () => Boolean, { nullable: true }) includeArchived?: boolean
   ) {
     if (isStaff(ctx.user!.role)) {
@@ -60,7 +60,7 @@ export class WalletResolver {
 
   @Authorized()
   @Query(() => Wallet, { nullable: true })
-  async wallet(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async wallet(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     const wallet = await this.service.getById(id);
     assertOwnership(ctx, wallet);
     return wallet;
@@ -121,7 +121,7 @@ export class WalletResolver {
   @Authorized([UserRole.Customer])
   @UseMiddleware(RequireActiveCustomer)
   @Mutation(() => SuccessResponse)
-  async requestWalletKeyExport(@Arg('walletId', () => Int) walletId: number, @Ctx() ctx: Context) {
+  async requestWalletKeyExport(@Arg('walletId', () => ID) walletId: string, @Ctx() ctx: Context) {
     await this.service.requestKeyExport(ctx.user!, await this.customer(ctx), walletId);
     return { success: true };
   }

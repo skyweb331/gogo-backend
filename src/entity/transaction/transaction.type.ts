@@ -1,5 +1,5 @@
-import { IsEnum, IsInt, Matches } from 'class-validator';
-import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { IsEnum, IsUUID, Matches } from 'class-validator';
+import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
@@ -18,9 +18,9 @@ export class TransactionsResponse extends PaginatedResponse {
 
 @InputType()
 export class SimulateDepositInput {
-  @Field(() => Int)
-  @IsInt()
-  customerId: number;
+  @Field(() => ID)
+  @IsUUID()
+  customerId: string;
 
   @Field(() => String, { description: 'Decimal amount, e.g. "8000.00"' })
   @Matches(/^\d{1,9}(\.\d{1,2})?$/, { message: 'Enter an amount like 8000.00' })

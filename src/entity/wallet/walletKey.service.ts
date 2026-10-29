@@ -16,9 +16,20 @@ export class WalletKeyService {
     private readonly vault: KeyVault
   ) {}
 
+  private async aad(wallet: Pick<WalletRow, 'id' | 'legacyId' | 'customerId'>) {
+    const customer =
+      wallet.legacyId === null
+        ? { id: wallet.customerId, legacyId: null }
+        : await this.prisma.orm.Customer.where({ id: wallet.customerId })
+            .select('id', 'legacyId')
+            .first();
+    if (!customer) throw new Error(`Customer of wallet ${wallet.id} not found`);
+    return walletKeyAad(wallet, customer);
+  }
+
   /** Seals and stores the generated key. Run inside the transaction that created the wallet. */
-  async store(wallet: Pick<WalletRow, 'id' | 'customerId'>, generated: GeneratedKey) {
-    const sealed = this.vault.seal(generated.secret, walletKeyAad(wallet.id, wallet.customerId));
+  async store(wallet: Pick<WalletRow, 'id' | 'legacyId' | 'customerId'>, generated: GeneratedKey) {
+    const sealed = this.vault.seal(generated.secret, await this.aad(wallet));
     await this.prisma.orm.WalletKey.create({
       walletId: wallet.id,
       keyFormat: generated.keyFormat,
@@ -27,18 +38,18 @@ export class WalletKeyService {
     });
   }
 
-  async hasKey(walletId: number) {
+  async hasKey(walletId: string) {
     const row = await this.prisma.orm.WalletKey.where({ walletId }).select('id').first();
     return !!row;
   }
 
   /** Decrypts and formats the key for wallet-app import. Callers audit and rate limit. */
   async exportKey(
-    wallet: Pick<WalletRow, 'id' | 'customerId' | 'address'>
+    wallet: Pick<WalletRow, 'id' | 'legacyId' | 'customerId' | 'address'>
   ): Promise<string | null> {
     const row = await this.prisma.orm.WalletKey.where({ walletId: wallet.id }).first();
     if (!row) return null;
-    const secret = this.vault.open(row, walletKeyAad(wallet.id, wallet.customerId));
+    const secret = this.vault.open(row, await this.aad(wallet));
     try {
       if (deriveAddress(row.keyFormat, secret) !== wallet.address) {
         throw new Error(`Wallet key ${row.id} does not match wallet ${wallet.id}`);
@@ -49,7 +60,7 @@ export class WalletKeyService {
     }
   }
 
-  async remove(walletId: number) {
+  async remove(walletId: string) {
     await this.prisma.orm.WalletKey.where({ walletId }).delete();
   }
 }

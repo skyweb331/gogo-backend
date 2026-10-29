@@ -95,11 +95,11 @@ export class FeeScheduleService {
     return Number(total);
   }
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.FeeSchedule.where({ id }).first();
   }
 
-  async tiersOf(scheduleId: number): Promise<FeeTierRow[]> {
+  async tiersOf(scheduleId: string): Promise<FeeTierRow[]> {
     return this.prisma.orm.FeeTier.where({ feeScheduleId: scheduleId })
       .orderBy((t) => t.position.asc())
       .all();
@@ -194,7 +194,7 @@ export class FeeScheduleService {
     return parsed.data;
   }
 
-  private async replaceTiers(scheduleId: number, tiers: FeeTierValue[]) {
+  private async replaceTiers(scheduleId: string, tiers: FeeTierValue[]) {
     await this.prisma.orm.FeeTier.where({ feeScheduleId: scheduleId }).deleteAll();
     await this.prisma.orm.FeeTier.createAll(
       tiers.map((t, position) => ({ feeScheduleId: scheduleId, position, ...t }))
@@ -237,7 +237,7 @@ export class FeeScheduleService {
     return schedule;
   }
 
-  private async editable(id: number) {
+  private async editable(id: string) {
     const schedule = await this.getById(id);
     if (!schedule) throw new NotFoundError('Fee schedule');
     if (schedule.status === FeeScheduleStatus.Draft) return schedule;
@@ -288,7 +288,7 @@ export class FeeScheduleService {
   }
 
   async publish(
-    id: number,
+    id: string,
     effectivePeriod: string,
     notifyCustomers: boolean | undefined,
     ctx: Context
@@ -338,7 +338,7 @@ export class FeeScheduleService {
     return published;
   }
 
-  async cancel(id: number, ctx: Context) {
+  async cancel(id: string, ctx: Context) {
     const schedule = await this.editable(id);
     const updated = (await this.prisma.orm.FeeSchedule.where({ id }).update({
       status: FeeScheduleStatus.Cancelled,
@@ -404,7 +404,7 @@ export class FeeScheduleService {
   }
 
   /** Emails active customers about a published schedule. */
-  async notifyCustomers(scheduleId: number) {
+  async notifyCustomers(scheduleId: string) {
     const schedule = await this.getById(scheduleId);
     if (!schedule || schedule.status !== FeeScheduleStatus.Scheduled) return 0;
     const tiers = await this.tiersOf(scheduleId);
@@ -414,7 +414,7 @@ export class FeeScheduleService {
     ]);
 
     let sent = 0;
-    let lastId = 0;
+    let lastId = '00000000-0000-0000-0000-000000000000';
     for (;;) {
       const customers = await this.prisma.orm.Customer.where((c) =>
         and(c.status.eq(CustomerStatus.Active), c.id.gt(lastId))

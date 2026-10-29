@@ -1,5 +1,5 @@
-import { IsEnum, IsInt, IsOptional, Length, MaxLength } from 'class-validator';
-import { Field, InputType, Int, ObjectType } from 'type-graphql';
+import { IsEnum, IsOptional, Length, MaxLength } from 'class-validator';
+import { Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { Chain } from '#src/graphql/enum.js';
 
@@ -32,9 +32,8 @@ export class AddExternalWalletInput {
 
 @InputType()
 export class WalletReauthInput {
-  @Field(() => Int)
-  @IsInt()
-  walletId: number;
+  @Field(() => ID)
+  walletId: string;
 
   @Field(() => String)
   password: string;
@@ -46,9 +45,8 @@ export class WalletReauthInput {
 
 @InputType()
 export class RemoveWalletKeyInput {
-  @Field(() => Int)
-  @IsInt()
-  walletId: number;
+  @Field(() => ID)
+  walletId: string;
 
   @Field(() => String)
   password: string;
@@ -56,9 +54,8 @@ export class RemoveWalletKeyInput {
 
 @InputType()
 export class UpdateWalletLabelInput {
-  @Field(() => Int)
-  @IsInt()
-  walletId: number;
+  @Field(() => ID)
+  walletId: string;
 
   @Field(() => String)
   @Length(1, 60)
@@ -68,8 +65,8 @@ export class UpdateWalletLabelInput {
 /** Returned once; the frontend never caches it (`fetchPolicy: 'no-cache'`). */
 @ObjectType()
 export class ExportedWalletKey {
-  @Field(() => Int)
-  walletId: number;
+  @Field(() => ID)
+  walletId: string;
 
   @Field(() => Chain)
   chain: Chain | string;

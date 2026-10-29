@@ -5,8 +5,8 @@ import {
   Authorized,
   Ctx,
   FieldResolver,
+  ID,
   Info,
-  Int,
   Mutation,
   Query,
   Resolver,
@@ -61,15 +61,15 @@ export class TransactionResolver {
 
   @Authorized()
   @Query(() => Transaction, { nullable: true })
-  async transaction(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
-    const tx = await this.service.getById(id);
+  async transaction(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
+    const tx = await this.service.getByIdOrLegacy(id);
     assertOwnership(ctx, tx);
     return tx;
   }
 
   @Authorized([UserRole.Admin])
   @Mutation(() => Transaction)
-  async retryPayout(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async retryPayout(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     return this.payouts.adminRetry(id, ctx);
   }
 

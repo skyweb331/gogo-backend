@@ -385,7 +385,7 @@
               "actorId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -434,7 +434,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -523,14 +523,14 @@
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -636,7 +636,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -661,6 +661,13 @@
                   "kind": "scalar"
                 }
               },
+              "legacyId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "onboardedAt": {
                 "nullable": true,
                 "type": {
@@ -671,7 +678,7 @@
               "payoutWalletId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -746,7 +753,7 @@
               "userId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               }
@@ -885,6 +892,9 @@
                 "kycStatus": {
                   "column": "kycStatus"
                 },
+                "legacyId": {
+                  "column": "legacyId"
+                },
                 "onboardedAt": {
                   "column": "onboardedAt"
                 },
@@ -942,7 +952,7 @@
               "createdById": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -955,6 +965,13 @@
               },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "legacyId": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -984,7 +1001,7 @@
               "publishedById": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1058,6 +1075,9 @@
                 "id": {
                   "column": "id"
                 },
+                "legacyId": {
+                  "column": "legacyId"
+                },
                 "notes": {
                   "column": "notes"
                 },
@@ -1086,7 +1106,7 @@
               "feeScheduleId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1100,7 +1120,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1209,7 +1229,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1282,7 +1302,7 @@
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1296,7 +1316,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1428,7 +1448,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1455,7 +1475,7 @@
               "userId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               }
@@ -1517,7 +1537,7 @@
               "authorId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1538,7 +1558,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1552,7 +1572,7 @@
               "ticketId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               }
@@ -1621,7 +1641,7 @@
               "assigneeId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1635,14 +1655,14 @@
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1650,6 +1670,20 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "legacyId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "reference": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1730,6 +1764,12 @@
                 },
                 "lastMessageAt": {
                   "column": "lastMessageAt"
+                },
+                "legacyId": {
+                  "column": "legacyId"
+                },
+                "reference": {
+                  "column": "reference"
                 },
                 "status": {
                   "column": "status"
@@ -1812,7 +1852,7 @@
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1854,7 +1894,7 @@
               "feeScheduleId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -1881,6 +1921,13 @@
               },
               "id": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "legacyId": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -1909,6 +1956,13 @@
               },
               "rail": {
                 "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "reference": {
+                "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1965,7 +2019,7 @@
               "virtualAccountId": {
                 "nullable": true,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               }
@@ -2094,6 +2148,9 @@
                 "id": {
                   "column": "id"
                 },
+                "legacyId": {
+                  "column": "legacyId"
+                },
                 "netAmountInCents": {
                   "column": "netAmountInCents"
                 },
@@ -2105,6 +2162,9 @@
                 },
                 "rail": {
                   "column": "rail"
+                },
+                "reference": {
+                  "column": "reference"
                 },
                 "sourceDetails": {
                   "column": "sourceDetails"
@@ -2144,7 +2204,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2171,7 +2231,7 @@
               "transactionId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2252,7 +2312,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2267,6 +2327,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar"
+                }
+              },
+              "legacyId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -2387,6 +2454,9 @@
                 "lastLoginAt": {
                   "column": "lastLoginAt"
                 },
+                "legacyId": {
+                  "column": "legacyId"
+                },
                 "name": {
                   "column": "name"
                 },
@@ -2429,14 +2499,14 @@
               "custodialWalletId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2477,7 +2547,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2633,14 +2703,14 @@
               "customerId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2662,6 +2732,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "legacyId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -2759,6 +2836,9 @@
                 "label": {
                   "column": "label"
                 },
+                "legacyId": {
+                  "column": "legacyId"
+                },
                 "status": {
                   "column": "status"
                 },
@@ -2820,7 +2900,7 @@
               "id": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2855,7 +2935,7 @@
               "walletId": {
                 "nullable": false,
                 "type": {
-                  "codecId": "pg/int4@1",
+                  "codecId": "pg/uuid@1",
                   "kind": "scalar"
                 }
               },
@@ -2971,6 +3051,13 @@
               "id": {
                 "nullable": false,
                 "type": {
+                  "codecId": "pg/uuid@1",
+                  "kind": "scalar"
+                }
+              },
+              "legacyId": {
+                "nullable": true,
+                "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
@@ -3052,6 +3139,9 @@
                 "id": {
                   "column": "id"
                 },
+                "legacyId": {
+                  "column": "legacyId"
+                },
                 "objectId": {
                   "column": "objectId"
                 },
@@ -3122,8 +3212,8 @@
                   "nullable": false
                 },
                 "actorId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "actorRole": {
@@ -3162,12 +3252,8 @@
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "ip": {
@@ -3252,17 +3338,13 @@
                   "typeRef": "Timestamp"
                 },
                 "customerId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "updatedAt": {
@@ -3359,12 +3441,8 @@
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "kycLink": {
@@ -3386,6 +3464,11 @@
                   "nativeType": "text",
                   "nullable": false
                 },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
                 "onboardedAt": {
                   "codecId": "pg/timestamptz-date@1",
                   "nativeType": "timestamptz",
@@ -3393,8 +3476,8 @@
                   "typeRef": "Timestamp"
                 },
                 "payoutWalletId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "region": {
@@ -3459,8 +3542,8 @@
                   "nullable": false
                 },
                 "userId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 }
               },
@@ -3499,6 +3582,11 @@
                 ]
               },
               "uniques": [
+                {
+                  "columns": [
+                    "legacyId"
+                  ]
+                },
                 {
                   "columns": [
                     "userId"
@@ -3542,8 +3630,8 @@
                   "typeRef": "Timestamp"
                 },
                 "createdById": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "effectivePeriod": {
@@ -3552,13 +3640,14 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
+                },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "notes": {
                   "codecId": "pg/text@1",
@@ -3581,8 +3670,8 @@
                   "typeRef": "Timestamp"
                 },
                 "publishedById": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "status": {
@@ -3631,13 +3720,19 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "legacyId"
+                  ]
+                }
+              ]
             },
             "fee_tiers": {
               "columns": {
                 "feeScheduleId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "fromInCents": {
@@ -3646,12 +3741,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "position": {
@@ -3746,12 +3837,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "iv": {
@@ -3798,8 +3885,8 @@
                   "typeRef": "Timestamp"
                 },
                 "customerId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "feeInCents": {
@@ -3812,12 +3899,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "periodKey": {
@@ -3947,12 +4030,8 @@
                   "typeRef": "Timestamp"
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "meta": {
@@ -3972,8 +4051,8 @@
                   }
                 },
                 "userId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 }
               },
@@ -4025,8 +4104,8 @@
             "support_messages": {
               "columns": {
                 "authorId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "body": {
@@ -4045,12 +4124,8 @@
                   "typeRef": "Timestamp"
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "isStaff": {
@@ -4063,8 +4138,8 @@
                   "nullable": false
                 },
                 "ticketId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 }
               },
@@ -4139,8 +4214,8 @@
               ],
               "columns": {
                 "assigneeId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "createdAt": {
@@ -4154,17 +4229,13 @@
                   "typeRef": "Timestamp"
                 },
                 "customerId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "lastMessageAt": {
@@ -4172,6 +4243,16 @@
                   "nativeType": "timestamptz",
                   "nullable": true,
                   "typeRef": "Timestamp"
+                },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
+                },
+                "reference": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -4241,7 +4322,18 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "legacyId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "reference"
+                  ]
+                }
+              ]
             },
             "transaction_events": {
               "checks": [
@@ -4263,12 +4355,8 @@
                   "typeRef": "Timestamp"
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "payload": {
@@ -4288,8 +4376,8 @@
                   }
                 },
                 "transactionId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "type": {
@@ -4406,8 +4494,8 @@
                   }
                 },
                 "customerId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "destinationWalletSnapshot": {
@@ -4436,8 +4524,8 @@
                   "nullable": true
                 },
                 "feeScheduleId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 },
                 "fundsReceivedAt": {
@@ -4457,13 +4545,14 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
+                },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "netAmountInCents": {
                   "codecId": "pg/int8@1",
@@ -4485,6 +4574,11 @@
                   "codecId": "pg/text@1",
                   "nativeType": "text",
                   "nullable": true
+                },
+                "reference": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
                 },
                 "sourceDetails": {
                   "codecId": "pg/jsonb@1",
@@ -4531,8 +4625,8 @@
                   "nullable": false
                 },
                 "virtualAccountId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": true
                 }
               },
@@ -4640,6 +4734,16 @@
               "uniques": [
                 {
                   "columns": [
+                    "legacyId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "reference"
+                  ]
+                },
+                {
+                  "columns": [
                     "bridgeDepositId"
                   ]
                 },
@@ -4681,12 +4785,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "isEmailVerified": {
@@ -4703,6 +4803,11 @@
                   "nativeType": "timestamptz",
                   "nullable": true,
                   "typeRef": "Timestamp"
+                },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "name": {
                   "codecId": "pg/text@1",
@@ -4759,6 +4864,11 @@
               "uniques": [
                 {
                   "columns": [
+                    "legacyId"
+                  ]
+                },
+                {
+                  "columns": [
                     "email"
                   ]
                 }
@@ -4794,13 +4904,13 @@
                   "typeRef": "Timestamp"
                 },
                 "custodialWalletId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "customerId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "deactivatedAt": {
@@ -4831,12 +4941,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "sourceCurrency": {
@@ -4970,12 +5076,8 @@
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "iv": {
@@ -4999,8 +5101,8 @@
                   "nullable": false
                 },
                 "walletId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "wrappedDataKey": {
@@ -5097,17 +5199,13 @@
                   "typeRef": "Timestamp"
                 },
                 "customerId": {
-                  "codecId": "pg/int4@1",
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
                 },
                 "keyExportedAt": {
@@ -5125,6 +5223,11 @@
                 "label": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
+                  "nullable": true
+                },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
                   "nullable": true
                 },
                 "status": {
@@ -5206,6 +5309,11 @@
               "uniques": [
                 {
                   "columns": [
+                    "legacyId"
+                  ]
+                },
+                {
+                  "columns": [
                     "customerId",
                     "chain",
                     "address"
@@ -5257,13 +5365,14 @@
                   "nullable": true
                 },
                 "id": {
-                  "codecId": "pg/int4@1",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nativeType": "int4",
+                  "codecId": "pg/uuid@1",
+                  "nativeType": "uuid",
                   "nullable": false
+                },
+                "legacyId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": true
                 },
                 "objectId": {
                   "codecId": "pg/text@1",
@@ -5343,6 +5452,11 @@
                 ]
               },
               "uniques": [
+                {
+                  "columns": [
+                    "legacyId"
+                  ]
+                },
                 {
                   "columns": [
                     "bridgeEventId"
@@ -5469,7 +5583,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "74ee075d25d7337b829ed869cfd62fe6196f873c9a9c4e8bbb5a309b0d6e2e2e",
+    "storageHash": "7d0741b1cb2086c077d35861408d08b1ebe61ae6e84a186961a9c37efe5bd043",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",
@@ -5482,7 +5596,7 @@
     }
   },
   "execution": {
-    "executionHash": "664a5de1853e0c6ddfaef123b57a78a334326bc75bfb2c0ef9b5102d5e4b6979",
+    "executionHash": "9371ff8d9b998908d006f464f72dbd9a18f427aad6413625c2c8d0e50c7b6cf7",
     "mutations": {
       "defaults": [
         {
@@ -5497,6 +5611,28 @@
           "ref": {
             "entry": "app_settings",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "audit_logs",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "custodial_wallets",
+            "field": "id",
             "namespace": "public"
           }
         },
@@ -5517,6 +5653,17 @@
         },
         {
           "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "customers",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
             "id": "timestampNow",
             "kind": "generator"
           },
@@ -5527,6 +5674,17 @@
           "ref": {
             "entry": "customers",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "fee_schedules",
+            "field": "id",
             "namespace": "public"
           }
         },
@@ -5547,6 +5705,39 @@
         },
         {
           "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "fee_tiers",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "key_vault_canaries",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "monthly_volumes",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
             "id": "timestampNow",
             "kind": "generator"
           },
@@ -5557,6 +5748,39 @@
           "ref": {
             "entry": "monthly_volumes",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "one_time_codes",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "support_messages",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "support_tickets",
+            "field": "id",
             "namespace": "public"
           }
         },
@@ -5577,6 +5801,28 @@
         },
         {
           "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "transaction_events",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "transactions",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
             "id": "timestampNow",
             "kind": "generator"
           },
@@ -5587,6 +5833,17 @@
           "ref": {
             "entry": "transactions",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "users",
+            "field": "id",
             "namespace": "public"
           }
         },
@@ -5607,6 +5864,17 @@
         },
         {
           "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "virtual_accounts",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
             "id": "timestampNow",
             "kind": "generator"
           },
@@ -5617,6 +5885,17 @@
           "ref": {
             "entry": "virtual_accounts",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "wallet_keys",
+            "field": "id",
             "namespace": "public"
           }
         },
@@ -5637,6 +5916,17 @@
         },
         {
           "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "wallets",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
             "id": "timestampNow",
             "kind": "generator"
           },
@@ -5647,6 +5937,17 @@
           "ref": {
             "entry": "wallets",
             "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "webhook_events",
+            "field": "id",
             "namespace": "public"
           }
         },

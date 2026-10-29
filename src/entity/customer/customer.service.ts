@@ -6,6 +6,7 @@ import { config } from '#src/config.js';
 import { CustomerStatus } from '#src/graphql/enum.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { AppError, NotFoundError } from '#src/utils/errors.js';
+import { isUuid } from '#src/utils/id.js';
 import type { Context } from '#src/context.js';
 
 import type { CustomerQueryArgs } from './customer.type.js';
@@ -61,7 +62,9 @@ export class CustomerService {
   private async searchCollection(query: CustomerQueryArgs) {
     let collection = this.prisma.orm.Customer;
     const term = query.search?.trim();
-    if (term) {
+    if (isUuid(term)) {
+      collection = collection.where((c) => c.id.eq(term)) as typeof collection;
+    } else if (term) {
       const pattern = `%${escapeLike(term)}%`;
       const users = await this.prisma.orm.User.where((u) =>
         or(u.email.ilike(pattern), u.name.ilike(pattern))
@@ -71,7 +74,7 @@ export class CustomerService {
         .all();
       const ids = users.map((u) => u.id);
       collection = collection.where((c) =>
-        c.userId.in(ids.length ? ids : [-1])
+        ids.length ? c.userId.in(ids) : c.id.isNull()
       ) as typeof collection;
     }
     return collection;
@@ -88,11 +91,11 @@ export class CustomerService {
     return Number(total);
   }
 
-  async getById(id: number) {
+  async getById(id: string) {
     return this.prisma.orm.Customer.where({ id }).first();
   }
 
-  async getByUserId(userId: number) {
+  async getByUserId(userId: string) {
     return this.prisma.orm.Customer.where({ userId }).first();
   }
 
@@ -104,7 +107,7 @@ export class CustomerService {
     return this.prisma.orm.Customer.where({ kycLinkId }).first();
   }
 
-  async create(data: { userId: number; country: string; region?: string | null }) {
+  async create(data: { userId: string; country: string; region?: string | null }) {
     return this.prisma.orm.Customer.create({
       userId: data.userId,
       country: data.country.toUpperCase(),
@@ -112,14 +115,14 @@ export class CustomerService {
     });
   }
 
-  async update(id: number, data: CustomerUpdate) {
+  async update(id: string, data: CustomerUpdate) {
     const row = await this.prisma.orm.Customer.where({ id }).update(data as any);
     if (!row) throw new Error(`Customer ${id} not found`);
     return row as CustomerRow;
   }
 
   /** Blocks the customer app and new payouts; deposits already at Bridge still settle. */
-  async suspend(id: number, reason: string, ctx: Context) {
+  async suspend(id: string, reason: string, ctx: Context) {
     const customer = await this.getById(id);
     if (!customer) throw new NotFoundError('Customer');
     if (customer.status === CustomerStatus.Suspended) return customer;
@@ -137,7 +140,7 @@ export class CustomerService {
     return updated;
   }
 
-  async reactivate(id: number, ctx: Context) {
+  async reactivate(id: string, ctx: Context) {
     const customer = await this.getById(id);
     if (!customer) throw new NotFoundError('Customer');
     if (customer.status !== CustomerStatus.Suspended) return customer;

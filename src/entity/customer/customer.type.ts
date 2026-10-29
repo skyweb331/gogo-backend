@@ -1,5 +1,5 @@
 import { IsOptional, MaxLength } from 'class-validator';
-import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
@@ -22,8 +22,8 @@ export class CustomersResponse extends PaginatedResponse {
 
 @InputType()
 export class SuspendCustomerInput {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => String)
   @MaxLength(500)

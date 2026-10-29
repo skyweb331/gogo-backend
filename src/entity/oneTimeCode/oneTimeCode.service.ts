@@ -30,14 +30,14 @@ const safeEqual = (a: string, b: string) => {
 export class OneTimeCodeService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async invalidate(userId: number, purpose: OtpPurpose) {
+  private async invalidate(userId: string, purpose: OtpPurpose) {
     await this.prisma.orm.OneTimeCode.where((c) =>
       and(c.userId.eq(userId), c.purpose.eq(purpose), c.consumedAt.isNull())
     ).updateAll({ consumedAt: new Date() });
   }
 
   /** 6-digit numeric code (email verification, wallet re-auth). */
-  async issueCode(userId: number, purpose: OtpPurpose, meta: Record<string, unknown> = {}) {
+  async issueCode(userId: string, purpose: OtpPurpose, meta: Record<string, unknown> = {}) {
     await this.invalidate(userId, purpose);
     const code = generateOtp(6);
     await this.prisma.orm.OneTimeCode.create({
@@ -52,7 +52,7 @@ export class OneTimeCodeService {
   }
 
   /** Opaque link token (password reset). Lookup is by hash, so no user id is needed. */
-  async issueToken(userId: number, purpose: OtpPurpose, meta: Record<string, unknown> = {}) {
+  async issueToken(userId: string, purpose: OtpPurpose, meta: Record<string, unknown> = {}) {
     await this.invalidate(userId, purpose);
     const token = generateToken(32);
     await this.prisma.orm.OneTimeCode.create({
@@ -71,7 +71,7 @@ export class OneTimeCodeService {
    * (e.g. the wallet id the code was issued for).
    */
   async consumeCode(
-    userId: number,
+    userId: string,
     purpose: OtpPurpose,
     code: string,
     metaMatch: Record<string, unknown> = {}
@@ -79,7 +79,7 @@ export class OneTimeCodeService {
     const row = await this.prisma.orm.OneTimeCode.where((c) =>
       and(c.userId.eq(userId), c.purpose.eq(purpose), c.consumedAt.isNull())
     )
-      .orderBy((c) => c.id.desc())
+      .orderBy([(c) => c.createdAt.desc(), (c) => c.id.desc()])
       .first();
 
     const invalid = new AppError('Invalid or expired code', { field: 'otp' });

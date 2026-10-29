@@ -1,5 +1,5 @@
-import { IsEnum, IsInt, IsOptional, Length } from 'class-validator';
-import { ArgsType, Field, InputType, Int, ObjectType } from 'type-graphql';
+import { IsEnum, IsOptional, IsUUID, Length } from 'class-validator';
+import { ArgsType, Field, ID, InputType, ObjectType } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
@@ -29,9 +29,9 @@ export class CreateSupportTicketInput {
 
 @InputType()
 export class ReplySupportTicketInput {
-  @Field(() => Int)
-  @IsInt()
-  ticketId: number;
+  @Field(() => ID)
+  @IsUUID()
+  ticketId: string;
 
   @Field(() => String)
   @Length(1, 5000, { message: 'Message must be 1 to 5000 characters' })
@@ -40,9 +40,9 @@ export class ReplySupportTicketInput {
 
 @InputType()
 export class UpdateSupportTicketInput {
-  @Field(() => Int)
-  @IsInt()
-  id: number;
+  @Field(() => ID)
+  @IsUUID()
+  id: string;
 
   @Field(() => TicketStatus, { nullable: true })
   @IsOptional()
@@ -50,7 +50,8 @@ export class UpdateSupportTicketInput {
   status?: TicketStatus;
 
   /** Staff user id; null unassigns */
-  @Field(() => Int, { nullable: true })
+  @Field(() => ID, { nullable: true })
   @IsOptional()
-  assigneeId?: number | null;
+  @IsUUID()
+  assigneeId?: string | null;
 }

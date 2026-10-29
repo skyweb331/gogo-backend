@@ -6,6 +6,7 @@ import {
   Ctx,
   FieldResolver,
   Info,
+  ID,
   Int,
   Mutation,
   ObjectType,
@@ -164,7 +165,7 @@ export class FeeResolver {
 
   @Authorized([UserRole.Support])
   @Query(() => FeeSchedule, { nullable: true })
-  async feeSchedule(@Arg('id', () => Int) id: number) {
+  async feeSchedule(@Arg('id', () => ID) id: string) {
     return this.service.getById(id);
   }
 
@@ -214,7 +215,7 @@ export class FeeResolver {
 
   @Authorized([UserRole.Admin])
   @Mutation(() => FeeSchedule)
-  async cancelFeeSchedule(@Arg('id', () => Int) id: number, @Ctx() ctx: Context) {
+  async cancelFeeSchedule(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
     return this.service.cancel(id, ctx);
   }
 

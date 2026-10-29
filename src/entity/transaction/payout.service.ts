@@ -28,6 +28,7 @@ import { stateForTransfer, TERMINAL_STATES } from '#src/state/transaction.stateM
 import type { WebhookOutcome } from '#src/webhook/dispatcher.js';
 import type { Context } from '#src/context.js';
 import { AppError, NotFoundError } from '#src/utils/errors.js';
+import { isUuid } from '#src/utils/id.js';
 import { explorerTxUrl } from '#src/utils/explorer.js';
 import {
   centsToDecimal,
@@ -53,7 +54,7 @@ const BELOW_MINIMUM = 'Deposit is below the minimum payout amount';
 const CHAIN_NAME: Record<string, string> = { base: 'Base', solana: 'Solana' };
 
 export interface WalletSnapshot {
-  walletId: number;
+  walletId: string;
   chain: 'base' | 'solana';
   address: string;
   type: string;
@@ -86,7 +87,7 @@ export class PayoutService {
    * Counts the deposit in the customer's monthly volume and fixes its fee. Runs once
    * per transaction, serialized per customer so tier boundaries are applied in order.
    */
-  async processDeposit(transactionId: number) {
+  async processDeposit(transactionId: string) {
     const tx = await this.transactions.getById(transactionId);
     if (!tx || tx.state !== TransactionState.Credited) return;
     if (tx.feeInCents === null) {
@@ -170,7 +171,7 @@ export class PayoutService {
       );
       if (!capped.payable) {
         this.mailer.opsAlert('Deposit below minimum payout', [
-          `Transaction ${tx.id}: credited ${formatMoney(base, tx.currency)} is below the ${formatMoney(this.feeSchedules.minimumPayoutInCents, tx.currency)} minimum.`,
+          `Transaction ${tx.reference}: credited ${formatMoney(base, tx.currency)} is below the ${formatMoney(this.feeSchedules.minimumPayoutInCents, tx.currency)} minimum.`,
           'Funds remain in the custodial wallet; resolve manually.',
         ]);
       }
@@ -180,7 +181,7 @@ export class PayoutService {
 
   // Payout
 
-  private async snapshotWallet(customerId: number): Promise<WalletSnapshot | null> {
+  private async snapshotWallet(customerId: string): Promise<WalletSnapshot | null> {
     const customer = await this.prisma.orm.Customer.where({ id: customerId }).first();
     if (!customer?.payoutWalletId) return null;
     const wallet = await this.prisma.orm.Wallet.where({ id: customer.payoutWalletId }).first();
@@ -203,7 +204,7 @@ export class PayoutService {
    * Sends credited stablecoin (minus `developer_fee`) to the payout wallet captured on
    * the first attempt. Only creates a new transfer when there is none in flight.
    */
-  async createPayout(transactionId: number) {
+  async createPayout(transactionId: string) {
     if (!this.bridge.configured) throw new RetryLaterError('Bridge API key not configured');
     const outcome = await this.prisma.transaction(async (): Promise<Outcome> => {
       await this.prisma.advisoryXactLock(lockKey(`payout:${transactionId}`));
@@ -255,12 +256,15 @@ export class PayoutService {
       }
 
       const attempts = tx.attempts + 1;
-      const idempotencyKey = attempts === 1 ? `payout-${tx.id}` : `payout-${tx.id}-r${attempts}`;
+      // Rows from before the UUID migration keep their integer keys so retries of earlier
+      // attempts stay idempotent on Bridge's side.
+      const key = tx.legacyId ?? tx.id;
+      const idempotencyKey = attempts === 1 ? `payout-${key}` : `payout-${key}-r${attempts}`;
       const request = {
         amount: centsToDecimal(tx.creditedAmountInCents),
         developer_fee: centsToDecimal(tx.feeInCents),
         on_behalf_of: customer.bridgeCustomerId,
-        client_reference_id: `nxpay-tx-${tx.id}`,
+        client_reference_id: `nxpay-tx-${key}`,
         source: {
           payment_rail: 'bridge_wallet' as const,
           currency: stablecoin,
@@ -359,9 +363,14 @@ export class PayoutService {
   private async findForTransfer(transfer: BridgeTransfer) {
     const byId = await this.transactions.getByTransferId(transfer.id);
     if (byId) return byId;
-    // Transfers created before the rename carry the legacy prefix.
-    const match = /^(?:nxpay|gogo)-tx-(\d+)$/.exec(transfer.client_reference_id ?? '');
-    return match ? this.transactions.getById(Number(match[1])) : null;
+    // Transfers created before the rename carry the `gogo` prefix, and those created before
+    // the UUID migration an integer id.
+    const ref = /^(?:nxpay|gogo)-tx-(.+)$/.exec(transfer.client_reference_id ?? '')?.[1];
+    if (!ref) return null;
+    if (isUuid(ref)) return this.transactions.getById(ref);
+    return /^\d+$/.test(ref)
+      ? this.prisma.orm.Transaction.where({ legacyId: Number(ref) }).first()
+      : null;
   }
 
   async applyTransfer(
@@ -422,7 +431,7 @@ export class PayoutService {
     return { state: target, finalFailure: false };
   }
 
-  async syncTransfer(transactionId: number) {
+  async syncTransfer(transactionId: string) {
     const tx = await this.transactions.getById(transactionId);
     if (!tx?.bridgeTransferId || TERMINAL_STATES.has(tx.state as TransactionState)) return;
     const transfer = await this.bridge.transfers.get(tx.bridgeTransferId);
@@ -501,8 +510,8 @@ export class PayoutService {
       .all();
     if (stuck.length || failed.length) {
       this.mailer.opsAlert('Daily reconciliation', [
-        `${stuck.length} transaction(s) unchanged for over 24h: ${stuck.map((t) => `#${t.id} ${t.state}`).join(', ') || 'none'}`,
-        `${failed.length} failed payout(s) need manual action: ${failed.map((t) => `#${t.id}`).join(', ') || 'none'}`,
+        `${stuck.length} transaction(s) unchanged for over 24h: ${stuck.map((t) => `${t.reference} ${t.state}`).join(', ') || 'none'}`,
+        `${failed.length} failed payout(s) need manual action: ${failed.map((t) => t.reference).join(', ') || 'none'}`,
       ]);
     }
     return { stuck: stuck.length, failed: failed.length };
@@ -510,7 +519,7 @@ export class PayoutService {
 
   // Admin
 
-  async adminRetry(transactionId: number, ctx: Context) {
+  async adminRetry(transactionId: string, ctx: Context) {
     const tx = await this.transactions.getById(transactionId);
     if (!tx) throw new NotFoundError('Transaction not found');
     if (tx.state !== TransactionState.PayoutFailed)
@@ -543,12 +552,12 @@ export class PayoutService {
 
   // Notifications
 
-  private async recipient(customerId: number) {
+  private async recipient(customerId: string) {
     const customer = await this.prisma.orm.Customer.where({ id: customerId }).first();
     return customer ? this.prisma.orm.User.where({ id: customer.userId }).first() : null;
   }
 
-  private async notifyCompleted(transactionId: number) {
+  private async notifyCompleted(transactionId: string) {
     const tx = await this.transactions.getById(transactionId);
     const user = tx && (await this.recipient(tx.customerId));
     if (!tx || !user) return;
@@ -574,11 +583,11 @@ export class PayoutService {
     });
   }
 
-  private async notifyFailed(transactionId: number) {
+  private async notifyFailed(transactionId: string) {
     const tx = await this.transactions.getById(transactionId);
     if (!tx) return;
     this.mailer.opsAlert('Payout needs attention', [
-      `Transaction ${tx.id} for customer ${tx.customerId} failed after ${tx.attempts} attempt(s).`,
+      `Transaction ${tx.reference} (${tx.id}) for customer ${tx.customerId} failed after ${tx.attempts} attempt(s).`,
       tx.failureReason ?? '',
     ]);
     const user = await this.recipient(tx.customerId);
@@ -593,7 +602,7 @@ export class PayoutService {
         rows: [
           ['Deposit', formatMoney(tx.grossAmountInCents, tx.currency)],
           ['Status', 'Payout delayed, our team is on it'],
-          ['Reference', `#${tx.id}`],
+          ['Reference', tx.reference],
         ],
       },
     });

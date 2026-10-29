@@ -43,7 +43,7 @@ export class UserService {
     return Number(total);
   }
 
-  async getUserById(id: number) {
+  async getUserById(id: string) {
     return this.prisma.orm.User.where({ id }).first();
   }
 
@@ -66,7 +66,7 @@ export class UserService {
   }
 
   async updateUser(
-    id: number,
+    id: string,
     data: Partial<
       Pick<
         UserRow,

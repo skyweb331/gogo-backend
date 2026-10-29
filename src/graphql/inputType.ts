@@ -1,9 +1,9 @@
-import { Field, InputType, Int } from 'type-graphql';
+import { Field, ID, InputType } from 'type-graphql';
 
 @InputType()
 export class EntityID {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 }
 
 /** Re-authentication for sensitive customer actions: password + emailed OTP. */

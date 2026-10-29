@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, UseMiddleware } from 'type-graphql';
+import { ObjectType, Field, ID, UseMiddleware } from 'type-graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 
 import { Entity } from '#src/graphql/interface.js';
@@ -7,8 +7,8 @@ import { StaffOnlyField } from '#src/graphql/middleware/customer.permission.js';
 
 @ObjectType({ implements: Entity })
 export class Customer extends Entity {
-  @Field(() => Int)
-  userId: number;
+  @Field(() => ID)
+  userId: string;
 
   @Field(() => CustomerType, { nullable: true })
   type?: CustomerType | string | null;
@@ -46,8 +46,8 @@ export class Customer extends Entity {
   @Field(() => GraphQLJSON, { nullable: true })
   rejectionReasons?: unknown;
 
-  @Field(() => Int, { nullable: true })
-  payoutWalletId?: number | null;
+  @Field(() => ID, { nullable: true })
+  payoutWalletId?: string | null;
 
   @Field(() => Date, { nullable: true })
   onboardedAt?: Date | null;

@@ -1,5 +1,5 @@
 import { IsEmail, IsIn, IsOptional, Length, Matches, MaxLength, MinLength } from 'class-validator';
-import { ObjectType, InputType, Field, ArgsType, Int } from 'type-graphql';
+import { ObjectType, InputType, Field, ArgsType, ID } from 'type-graphql';
 
 import { PaginatedResponse } from '#src/graphql/response/index.js';
 import { QueryArgsBase } from '#src/graphql/queryArgs.js';
@@ -167,8 +167,8 @@ export class CreateStaffUserInput {
 
 @InputType()
 export class UpdateStaffUserInput {
-  @Field(() => Int)
-  id: number;
+  @Field(() => ID)
+  id: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()

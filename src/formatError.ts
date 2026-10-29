@@ -70,6 +70,11 @@ export const formatError = (
     if (originalError.sqlState === '23514') {
       return { message: 'Invalid value', extensions: { code: 'BAD_USER_INPUT' } };
     }
+
+    // Malformed id (not a UUID) in an argument or filter
+    if (originalError.sqlState === '22P02') {
+      return { message: 'Record not found', extensions: { code: 'NOT_FOUND' } };
+    }
   }
 
   // class-validator input errors: first message, field as path (limelite form convention)

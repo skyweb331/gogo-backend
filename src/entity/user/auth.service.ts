@@ -18,6 +18,7 @@ import {
   verifyPassword,
 } from '#src/utils/auth.js';
 import { AppError, UnauthenticatedError } from '#src/utils/errors.js';
+import { idOrLegacy } from '#src/utils/id.js';
 
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { OneTimeCodeService } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
@@ -129,13 +130,13 @@ export class AuthService {
   }
 
   private async userFromMfaToken(mfaToken: string) {
-    let userId: number;
+    let userId: string | number;
     try {
       userId = verifyMfaChallengeToken(mfaToken);
     } catch {
       throw new UnauthenticatedError('Your sign-in session expired. Please sign in again.');
     }
-    const user = await this.users.getUserById(userId);
+    const user = await this.prisma.orm.User.where(idOrLegacy(userId)).first();
     if (!user || user.deletedAt || !isStaff(user.role)) throw new UnauthenticatedError();
     return user;
   }
@@ -345,7 +346,7 @@ export class AuthService {
     return updated;
   }
 
-  async resetStaffTotp(id: number, ctx: Context) {
+  async resetStaffTotp(id: string, ctx: Context) {
     const before = await this.users.getUserById(id);
     if (!before || !isStaff(before.role)) throw new AppError('Staff user not found');
     const updated = await this.users.updateUser(id, { totpEnabled: false, totpSecret: null });

@@ -50,7 +50,7 @@ export const StaffOnlyField: MiddlewareFn<Context> = async ({ context }, next) =
 /** Ensures a record loaded by id belongs to the caller (staff bypass). */
 export function assertOwnership(
   context: Context,
-  record: { customerId: number } | null | undefined
+  record: { customerId: string } | null | undefined
 ) {
   if (!record) return;
   if (context.user && isStaff(context.user.role)) return;

@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import { Container } from 'typedi';
 
 import { passwordVersion, verifyToken } from '#src/utils/auth.js';
+import { idOrLegacy } from '#src/utils/id.js';
 
 import RootDataLoader from '#src/graphql/loader/index.js';
 import { PrismaService, type CustomerRow, type UserRow } from '#src/service/prisma.js';
@@ -34,7 +35,7 @@ export const context = async ({ req, res }: { req: Request; res: Response }): Pr
   if (token) {
     try {
       const payload = verifyToken(token);
-      const row = await prisma.orm.User.where({ id: payload.id }).first();
+      const row = await prisma.orm.User.where(idOrLegacy(payload.id)).first();
       // Tokens die with the account or a password change
       if (row && !row.deletedAt && passwordVersion(row.password) === payload.pv) {
         user = row;
