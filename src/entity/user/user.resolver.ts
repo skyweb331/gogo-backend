@@ -191,7 +191,15 @@ export class UserResolver {
   @Authorized()
   @Mutation(() => User)
   async updateProfile(@Arg('data') data: UpdateProfileInput, @Ctx() ctx: Context): Promise<User> {
-    return this.service.updateUser(ctx.user!.id, { name: data.name.trim() });
+    const name = data.name.trim();
+    const customer = ctx.customer ?? (await this.customers.getByUserId(ctx.user!.id));
+    if (name !== ctx.user!.name && customer && customer.kycStatus !== 'not_started') {
+      throw new AppError(
+        'Your name is locked after identity verification starts. Contact support to change it.',
+        { field: 'name' }
+      );
+    }
+    return this.service.updateUser(ctx.user!.id, { name });
   }
 
   @Authorized()
