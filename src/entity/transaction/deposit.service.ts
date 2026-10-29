@@ -165,7 +165,7 @@ export class DepositService {
           rail: activity.source?.payment_rail ?? tx.rail,
           ...(activity.source && { sourceDetails: toJson(activity.source) }),
         };
-        after.push(() => this.notifyReceived(tx.id));
+        after.push(() => this.notifyReceived(tx.id, activity.receipt?.url));
         break;
       case 'payment_submitted':
         break;
@@ -232,7 +232,7 @@ export class DepositService {
     if (!updated) throw new Error(`Transaction ${tx.id} changed concurrently`);
   }
 
-  private async notifyReceived(transactionId: string) {
+  private async notifyReceived(transactionId: string, receiptUrl?: string) {
     const tx = await this.transactions.getById(transactionId);
     if (!tx) return;
     const customer = await this.prisma.orm.Customer.where({ id: tx.customerId }).first();
@@ -248,6 +248,7 @@ export class DepositService {
         name: user.name,
         currencyLabel: tx.currency === FiatCurrency.eur ? 'EUR' : 'USD',
         reference: tx.reference,
+        receiptUrl: receiptUrl?.startsWith('https://') ? receiptUrl : null,
         rows: [
           ['Amount', formatMoney(tx.grossAmountInCents, tx.currency)],
           ['Method', RAIL_LABEL[tx.rail ?? ''] ?? tx.rail ?? 'Bank transfer'],

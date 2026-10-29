@@ -6,3 +6,8 @@ block content
   p We received a deposit to your #{currencyLabel} account. It is being converted and will be sent to your wallet.
   +rows(rows)
   +button(frontendUrl + '/transactions/' + reference, 'Track deposit')
+  p(style="font-size:13px;color:#7a8194;")
+    | Our payments partner Bridge also emails you a receipt for each deposit.
+    if receiptUrl
+      |  
+      a(href=receiptUrl) View the Bridge receipt
