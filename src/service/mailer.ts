@@ -20,6 +20,7 @@ export type EmailTemplate =
   | 'staff-invite'
   | 'otp'
   | 'wallet-alert'
+  | 'security-alert'
   | 'wallet-key-exported'
   | 'kyc-approved'
   | 'kyc-rejected'

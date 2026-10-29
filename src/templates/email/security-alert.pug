@@ -1,0 +1,10 @@
+extends layout.pug
+include mixins.pug
+
+block content
+  p Hi #{name},
+  p A security setting on your #{appName} account changed:
+  p
+    strong= change
+  p If this was you, no action is needed. If it wasn't, reset your password right away and contact support.
+  +button(frontendUrl + '/profile', 'Review security settings')

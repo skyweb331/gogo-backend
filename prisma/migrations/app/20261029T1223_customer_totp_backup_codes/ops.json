@@ -1,0 +1,44 @@
+[
+  {
+    "id": "column.public.users.totpBackupCodes",
+    "label": "Add column \"totpBackupCodes\" to \"users\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "totpBackupCodes",
+        "table": "users"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"totpBackupCodes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "totpBackupCodes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"totpBackupCodes\"",
+        "sql": "ALTER TABLE \"public\".\"users\" ADD COLUMN \"totpBackupCodes\" jsonb"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"totpBackupCodes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "users",
+          "totpBackupCodes"
+        ]
+      }
+    ]
+  }
+]

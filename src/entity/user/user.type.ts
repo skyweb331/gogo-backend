@@ -68,7 +68,7 @@ export class LoginResponse {
   @Field(() => String, { nullable: true })
   accessToken?: string;
 
-  /** Staff: enter the authenticator code with `verifyAdminTotp` */
+  /** Enter the authenticator code: staff with `verifyAdminTotp`, customers with `verifyLoginCode` */
   @Field(() => Boolean)
   mfaRequired: boolean = false;
 
@@ -98,6 +98,49 @@ export class TotpSetup {
 
   @Field(() => String)
   otpauthUrl: string;
+}
+
+@InputType()
+export class LoginCodeInput {
+  @Field(() => String)
+  mfaToken: string;
+
+  /** 6-digit authenticator code or a backup code (`XXXXX-XXXXX`) */
+  @Field(() => String)
+  @Length(6, 20, { message: 'Enter the 6-digit code or a backup code' })
+  code: string;
+}
+
+@InputType()
+export class BeginTwoFactorSetupInput {
+  @Field(() => String)
+  @MinLength(1, { message: 'Enter your password' })
+  password: string;
+}
+
+@InputType()
+export class TwoFactorCodeInput {
+  @Field(() => String)
+  @Length(6, 20, { message: 'Enter the 6-digit code or a backup code' })
+  code: string;
+}
+
+@InputType()
+export class DisableTwoFactorInput {
+  @Field(() => String)
+  @MinLength(1, { message: 'Enter your password' })
+  password: string;
+
+  @Field(() => String)
+  @Length(6, 20, { message: 'Enter the 6-digit code or a backup code' })
+  code: string;
+}
+
+@ObjectType()
+export class BackupCodes {
+  /** Shown once; only hashes are stored. */
+  @Field(() => [String])
+  codes: string[];
 }
 
 @InputType()

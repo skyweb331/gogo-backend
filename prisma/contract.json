@@ -2317,6 +2317,13 @@
                   "plane": "domain"
                 }
               },
+              "totpBackupCodes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/jsonb@1",
+                  "kind": "scalar"
+                }
+              },
               "totpEnabled": {
                 "nullable": false,
                 "type": {
@@ -2415,6 +2422,9 @@
                 },
                 "role": {
                   "column": "role"
+                },
+                "totpBackupCodes": {
+                  "column": "totpBackupCodes"
                 },
                 "totpEnabled": {
                   "column": "totpEnabled"
@@ -4718,6 +4728,11 @@
                     "plane": "storage"
                   }
                 },
+                "totpBackupCodes": {
+                  "codecId": "pg/jsonb@1",
+                  "nativeType": "jsonb",
+                  "nullable": true
+                },
                 "totpEnabled": {
                   "codecId": "pg/bool@1",
                   "default": {
@@ -5442,7 +5457,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "0d7c10eeac2c6ff2294dd684fffd6160a290b48b464939592db20138febda647",
+    "storageHash": "20d98f4734d9bc1c65c7605e1bc02ba8dcd48e231daae04e0d55542cb3846ce6",
     "types": {
       "Timestamp": {
         "codecId": "pg/timestamptz-date@1",

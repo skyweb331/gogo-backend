@@ -34,7 +34,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'0d7c10eeac2c6ff2294dd684fffd6160a290b48b464939592db20138febda647'>;
+  StorageHashBase<'20d98f4734d9bc1c65c7605e1bc02ba8dcd48e231daae04e0d55542cb3846ce6'>;
 export type ExecutionHash =
   ExecutionHashBase<'9371ff8d9b998908d006f464f72dbd9a18f427aad6413625c2c8d0e50c7b6cf7'>;
 export type ProfileHash =
@@ -430,6 +430,7 @@ export type FieldOutputTypes = {
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly password: CodecTypes['pg/text@1']['output'];
       readonly role: 'Customer' | 'Support' | 'Admin';
+      readonly totpBackupCodes: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly totpEnabled: CodecTypes['pg/bool@1']['output'];
       readonly totpSecret: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -675,6 +676,7 @@ export type FieldInputTypes = {
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly password: CodecTypes['pg/text@1']['input'];
       readonly role: 'Customer' | 'Support' | 'Admin';
+      readonly totpBackupCodes: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly totpEnabled: CodecTypes['pg/bool@1']['input'];
       readonly totpSecret: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -920,6 +922,7 @@ export type StorageColumnTypes = {
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly password: CodecTypes['pg/text@1']['output'];
       readonly role: 'Customer' | 'Support' | 'Admin';
+      readonly totpBackupCodes: CodecTypes['pg/jsonb@1']['output'] | null;
       readonly totpEnabled: CodecTypes['pg/bool@1']['output'];
       readonly totpSecret: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -1165,6 +1168,7 @@ export type StorageColumnInputTypes = {
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly password: CodecTypes['pg/text@1']['input'];
       readonly role: 'Customer' | 'Support' | 'Admin';
+      readonly totpBackupCodes: CodecTypes['pg/jsonb@1']['input'] | null;
       readonly totpEnabled: CodecTypes['pg/bool@1']['input'];
       readonly totpSecret: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-date@1']['input'];
@@ -1453,6 +1457,7 @@ export namespace Models {
     name: CodecTypes['pg/text@1']['output'];
     password: CodecTypes['pg/text@1']['output'];
     role: 'Customer' | 'Support' | 'Admin';
+    totpBackupCodes: CodecTypes['pg/jsonb@1']['output'] | null;
     totpEnabled: CodecTypes['pg/bool@1']['output'];
     totpSecret: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-date@1']['output'];
@@ -2803,6 +2808,11 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/text@1', 'Customer'>;
                   };
+                };
+                readonly totpBackupCodes: {
+                  readonly nativeType: 'jsonb';
+                  readonly codecId: 'pg/jsonb@1';
+                  readonly nullable: true;
                 };
                 readonly totpEnabled: {
                   readonly nativeType: 'bool';
@@ -4604,6 +4614,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly totpBackupCodes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/jsonb@1' };
+              };
               readonly totpEnabled: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
@@ -4669,6 +4683,7 @@ type ContractBase = Omit<
                 readonly name: { readonly column: 'name' };
                 readonly password: { readonly column: 'password' };
                 readonly role: { readonly column: 'role' };
+                readonly totpBackupCodes: { readonly column: 'totpBackupCodes' };
                 readonly totpEnabled: { readonly column: 'totpEnabled' };
                 readonly totpSecret: { readonly column: 'totpSecret' };
                 readonly updatedAt: { readonly column: 'updatedAt' };

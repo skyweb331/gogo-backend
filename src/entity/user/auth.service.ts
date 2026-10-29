@@ -1,5 +1,5 @@
 import { Service } from 'typedi';
-import { generateSecret, generateURI, verify as verifyTotp } from 'otplib';
+import { generateSecret, generateURI } from 'otplib';
 
 import { config, skipEmailVerification } from '#src/config.js';
 import type { Context } from '#src/context.js';
@@ -27,6 +27,7 @@ import {
   assertSupportedGeography,
 } from '#src/entity/customer/customer.service.js';
 
+import { TwoFactorService } from './twoFactor.service.js';
 import { normalizeEmail, UserService } from './user.service.js';
 import type {
   CreateStaffUserInput,
@@ -51,7 +52,8 @@ export class AuthService {
     private readonly codes: OneTimeCodeService,
     private readonly mailer: MailerService,
     private readonly limiter: RateLimiterService,
-    private readonly audit: AuditLogService
+    private readonly audit: AuditLogService,
+    private readonly twoFactor: TwoFactorService
   ) {}
 
   issueAccessToken(user: UserRow, mfa = false) {
@@ -121,6 +123,14 @@ export class AuthService {
       };
     }
 
+    if (user.totpEnabled) {
+      return {
+        mfaRequired: true,
+        totpSetupRequired: false,
+        mfaToken: createMfaChallengeToken(user.id),
+      };
+    }
+
     await this.users.updateUser(user.id, { lastLoginAt: new Date() });
     return {
       accessToken: this.issueAccessToken(user),
@@ -129,7 +139,7 @@ export class AuthService {
     };
   }
 
-  private async userFromMfaToken(mfaToken: string) {
+  private async userFromMfaToken(mfaToken: string, staff = true) {
     let userId: string | number;
     try {
       userId = verifyMfaChallengeToken(mfaToken);
@@ -138,14 +148,36 @@ export class AuthService {
     }
     if (!isUuid(userId)) throw new UnauthenticatedError();
     const user = await this.users.getUserById(userId);
-    if (!user || user.deletedAt || !isStaff(user.role)) throw new UnauthenticatedError();
+    if (!user || user.deletedAt || isStaff(user.role) !== staff) throw new UnauthenticatedError();
     return user;
   }
 
-  private async checkTotp(secret: string | null, code: string) {
-    if (!secret) return false;
-    const result = await verifyTotp({ secret, token: code, epochTolerance: 30 });
-    return result.valid;
+  private checkTotp(secret: string | null, code: string) {
+    return this.twoFactor.checkTotp(secret, code);
+  }
+
+  /** Customer second step: an authenticator code or a backup code. */
+  async verifyLoginCode(mfaToken: string, code: string, ctx: Context): Promise<LoginResponse> {
+    const user = await this.userFromMfaToken(mfaToken, false);
+    this.limiter.consume(`totp:${user.id}`, 6, 5 * MINUTE);
+    if (!user.totpEnabled) throw new UnauthenticatedError();
+
+    const factor = await this.twoFactor.verify(user, code);
+    if (!factor) throw new AppError('Invalid authentication code', { field: 'code' });
+
+    this.limiter.reset(`totp:${user.id}`);
+    await this.users.updateUser(user.id, { lastLoginAt: new Date() });
+    if (factor === 'backup') {
+      await this.audit.log(
+        { user, ip: ctx.ip },
+        { action: 'user.loginWithBackupCode', entity: 'User', entityId: user.id }
+      );
+    }
+    return {
+      accessToken: this.issueAccessToken(user),
+      mfaRequired: false,
+      totpSetupRequired: false,
+    };
   }
 
   async verifyAdminTotp(mfaToken: string, code: string, ctx: Context): Promise<LoginResponse> {

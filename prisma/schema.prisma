@@ -119,6 +119,8 @@ model User {
   isEmailVerified Boolean            @default(false)
   totpSecret      String?
   totpEnabled     Boolean            @default(false)
+  // SHA-256 hashes of unused backup codes
+  totpBackupCodes Jsonb?
   lastLoginAt     Timestamp?
   deletedAt       Timestamp?
   createdAt       Timestamp          @default(now())

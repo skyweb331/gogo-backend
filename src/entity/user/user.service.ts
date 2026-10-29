@@ -76,6 +76,7 @@ export class UserService {
         | 'isEmailVerified'
         | 'totpSecret'
         | 'totpEnabled'
+        | 'totpBackupCodes'
         | 'lastLoginAt'
         | 'deletedAt'
       >
