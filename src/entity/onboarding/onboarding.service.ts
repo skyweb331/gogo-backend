@@ -14,7 +14,16 @@ import {
 } from '#src/service/bridge/index.js';
 import { MailerService } from '#src/service/mailer.js';
 import { QueueService } from '#src/service/queue.js';
-import { CustomerStatus, CustomerType, FiatCurrency, OnboardingStep } from '#src/graphql/enum.js';
+import {
+  CustomerStatus,
+  CustomerType,
+  FiatCurrency,
+  KycStatus,
+  normalizeKycStatus,
+  normalizeTosStatus,
+  OnboardingStep,
+  TosStatus,
+} from '#src/graphql/enum.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { CustomerService } from '#src/entity/customer/customer.service.js';
 import { WalletService } from '#src/entity/wallet/wallet.service.js';
@@ -31,20 +40,14 @@ export const COMPLETE_ONBOARDING = 'complete-onboarding';
 /** `base` covers USD (ACH/wire); `sepa` covers EUR. */
 const ENDORSEMENTS = ['base', 'sepa'];
 
-const KYC_IN_PROGRESS = new Set([
-  'not_started',
-  'incomplete',
-  'awaiting_questionnaire',
-  'awaiting_ubo',
+const KYC_IN_PROGRESS = new Set<string>([
+  KycStatus.not_started,
+  KycStatus.incomplete,
+  KycStatus.awaiting_questionnaire,
+  KycStatus.awaiting_ubo,
 ]);
-const KYC_REVIEW = new Set(['under_review', 'paused']);
-const KYC_REJECTED = new Set(['rejected', 'offboarded']);
-
-/** Bridge's customer object says `active` where KYC links say `approved`. */
-const normalizeKycStatus = (status?: string | null) => {
-  if (!status) return 'not_started';
-  return status === 'active' ? 'approved' : status;
-};
+const KYC_REVIEW = new Set<string>([KycStatus.under_review, KycStatus.paused]);
+const KYC_REJECTED = new Set<string>([KycStatus.rejected, KycStatus.offboarded]);
 
 /** Only the customer-facing reason is kept; `developer_reason` stays with Bridge. */
 const customerReasons = (reasons?: BridgeRejectionReason[] | null) =>
@@ -86,7 +89,7 @@ export class OnboardingService {
       kycStatus: customer.kycStatus,
       tosStatus: customer.tosStatus,
       rejectionReasons: reasons.filter((r) => typeof r === 'string'),
-      tosLink: customer.tosStatus === 'approved' ? null : customer.tosLink,
+      tosLink: customer.tosStatus === TosStatus.approved ? null : customer.tosLink,
       kycLink: KYC_IN_PROGRESS.has(customer.kycStatus) ? customer.kycLink : null,
       currencies: [...new Set(vas.map((v) => v.sourceCurrency as FiatCurrency))],
       sandbox: isBridgeSandbox,
@@ -98,8 +101,8 @@ export class OnboardingService {
     if (!customer.type || (!customer.kycLinkId && !customer.bridgeCustomerId))
       return OnboardingStep.ChooseType;
     if (KYC_REJECTED.has(customer.kycStatus)) return OnboardingStep.Rejected;
-    if (customer.kycStatus === 'approved') return OnboardingStep.Finalize;
-    if (customer.tosStatus !== 'approved') return OnboardingStep.AcceptTos;
+    if (customer.kycStatus === KycStatus.approved) return OnboardingStep.Finalize;
+    if (customer.tosStatus !== TosStatus.approved) return OnboardingStep.AcceptTos;
     if (KYC_REVIEW.has(customer.kycStatus)) return OnboardingStep.UnderReview;
     return OnboardingStep.CompleteKyc;
   }
@@ -117,7 +120,7 @@ export class OnboardingService {
 
     const started = !!(customer.kycLinkId || customer.bridgeCustomerId);
     if (started && customer.type === type) return this.refresh(customer);
-    if (started && customer.kycStatus !== 'not_started') {
+    if (started && customer.kycStatus !== KycStatus.not_started) {
       throw new AppError(
         'Verification is already in progress and the account type can no longer change'
       );
@@ -174,7 +177,8 @@ export class OnboardingService {
     this.assertBridge();
     if (customer.status !== CustomerStatus.Onboarding)
       throw new AppError('Identity verification is already complete');
-    if (customer.tosStatus !== 'approved') throw new AppError('Accept the terms of service first');
+    if (customer.tosStatus !== TosStatus.approved)
+      throw new AppError('Accept the terms of service first');
     if (!customer.bridgeCustomerId) throw new AppError('Start verification first');
     try {
       await this.bridge.customers.simulateKycApproval(customer.bridgeCustomerId);
@@ -230,7 +234,7 @@ export class OnboardingService {
     if (!customer) throw new AppError('Customer not found');
     if (customer.status === CustomerStatus.Suspended)
       throw new AppError('Your account is suspended');
-    if (customer.kycStatus !== 'approved' || !customer.bridgeCustomerId) {
+    if (customer.kycStatus !== KycStatus.approved || !customer.bridgeCustomerId) {
       throw new AppError('Identity verification is not approved yet');
     }
     this.assertBridge();
@@ -285,7 +289,7 @@ export class OnboardingService {
       kycLinkId: link.id,
       kycLink: link.kyc_link,
       tosLink: link.tos_link,
-      tosStatus: link.tos_status ?? customer.tosStatus,
+      tosStatus: link.tos_status ? normalizeTosStatus(link.tos_status) : customer.tosStatus,
       kycStatus: normalizeKycStatus(link.kyc_status),
       rejectionReasons: toJson(customerReasons(link.rejection_reasons)),
       ...(link.customer_id && !customer.bridgeCustomerId && { bridgeCustomerId: link.customer_id }),
@@ -298,7 +302,7 @@ export class OnboardingService {
       bridgeCustomerId: remote.id,
       kycStatus: normalizeKycStatus(remote.status ?? remote.kyc_status),
       ...(remote.has_accepted_terms_of_service !== undefined && {
-        tosStatus: remote.has_accepted_terms_of_service ? 'approved' : customer.tosStatus,
+        tosStatus: remote.has_accepted_terms_of_service ? TosStatus.approved : customer.tosStatus,
       }),
       endorsements: toJson(
         (remote.endorsements ?? []).map((e) => ({ name: e.name, status: e.status }))
@@ -331,7 +335,7 @@ export class OnboardingService {
       after: { kycStatus: after },
     });
 
-    if (after === 'approved' && updated.status === CustomerStatus.Onboarding) {
+    if (after === KycStatus.approved && updated.status === CustomerStatus.Onboarding) {
       await this.queue.sendSafe(
         COMPLETE_ONBOARDING,
         { customerId: updated.id },
@@ -390,7 +394,7 @@ export class OnboardingService {
     let finalized = 0;
     for (const customer of pending) {
       try {
-        if (customer.kycStatus === 'approved') {
+        if (customer.kycStatus === KycStatus.approved) {
           await this.queue.sendSafe(
             COMPLETE_ONBOARDING,
             { customerId: customer.id },

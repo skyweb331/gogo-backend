@@ -17,7 +17,7 @@ import graphqlFields from 'graphql-fields';
 import type { GraphQLResolveInfo } from 'graphql';
 
 import { type Context } from '#src/context.js';
-import { UserRole } from '#src/graphql/enum.js';
+import { KycStatus, UserRole } from '#src/graphql/enum.js';
 import { SuccessResponse } from '#src/graphql/response/index.js';
 import { AppError, UnauthenticatedError } from '#src/utils/errors.js';
 
@@ -193,7 +193,7 @@ export class UserResolver {
   async updateProfile(@Arg('data') data: UpdateProfileInput, @Ctx() ctx: Context): Promise<User> {
     const name = data.name.trim();
     const customer = ctx.customer ?? (await this.customers.getByUserId(ctx.user!.id));
-    if (name !== ctx.user!.name && customer && customer.kycStatus !== 'not_started') {
+    if (name !== ctx.user!.name && customer && customer.kycStatus !== KycStatus.not_started) {
       throw new AppError(
         'Your name is locked after identity verification starts. Contact support to change it.',
         { field: 'name' }

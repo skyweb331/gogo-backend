@@ -2,6 +2,7 @@ import { Field, ObjectType, Query, Resolver } from 'type-graphql';
 import { Service } from 'typedi';
 
 import { config, isBridgeSandbox } from '#src/config.js';
+import { Chain } from '#src/graphql/enum.js';
 
 @ObjectType()
 export class AppInfo {
@@ -11,8 +12,8 @@ export class AppInfo {
   @Field(() => Boolean)
   sandbox: boolean;
 
-  @Field(() => String)
-  defaultPayoutChain: string;
+  @Field(() => Chain)
+  defaultPayoutChain: Chain;
 
   @Field(() => Date)
   serverTime: Date;
@@ -26,7 +27,7 @@ export class SystemResolver {
     return {
       bridgeEnv: config.BRIDGE_ENV,
       sandbox: isBridgeSandbox,
-      defaultPayoutChain: config.DEFAULT_PAYOUT_CHAIN,
+      defaultPayoutChain: config.DEFAULT_PAYOUT_CHAIN as Chain,
       serverTime: new Date(),
     };
   }

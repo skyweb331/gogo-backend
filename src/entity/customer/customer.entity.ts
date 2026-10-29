@@ -2,7 +2,7 @@ import { ObjectType, Field, ID, UseMiddleware } from 'type-graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 
 import { Entity } from '#src/graphql/interface.js';
-import { CustomerStatus, CustomerType } from '#src/graphql/enum.js';
+import { CustomerStatus, CustomerType, KycStatus, TosStatus } from '#src/graphql/enum.js';
 import { StaffOnlyField } from '#src/graphql/middleware/customer.permission.js';
 
 @ObjectType({ implements: Entity })
@@ -28,11 +28,11 @@ export class Customer extends Entity {
 
   kycLinkId?: string | null;
 
-  @Field(() => String)
-  kycStatus: string;
+  @Field(() => KycStatus)
+  kycStatus: KycStatus | string;
 
-  @Field(() => String)
-  tosStatus: string;
+  @Field(() => TosStatus)
+  tosStatus: TosStatus | string;
 
   @UseMiddleware(StaffOnlyField)
   @Field(() => String, { nullable: true, description: 'Hosted Bridge KYC link (staff only)' })

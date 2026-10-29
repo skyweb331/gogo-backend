@@ -1,7 +1,14 @@
 import { IsEnum } from 'class-validator';
 import { Field, InputType, ObjectType } from 'type-graphql';
 
-import { CustomerStatus, CustomerType, FiatCurrency, OnboardingStep } from '#src/graphql/enum.js';
+import {
+  CustomerStatus,
+  CustomerType,
+  FiatCurrency,
+  KycStatus,
+  OnboardingStep,
+  TosStatus,
+} from '#src/graphql/enum.js';
 
 @InputType()
 export class StartOnboardingInput {
@@ -21,11 +28,11 @@ export class OnboardingStatus {
   @Field(() => CustomerType, { nullable: true })
   type?: CustomerType | string | null;
 
-  @Field(() => String)
-  kycStatus: string;
+  @Field(() => KycStatus)
+  kycStatus: KycStatus | string;
 
-  @Field(() => String)
-  tosStatus: string;
+  @Field(() => TosStatus)
+  tosStatus: TosStatus | string;
 
   @Field(() => [String])
   rejectionReasons: string[];

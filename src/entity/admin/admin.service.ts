@@ -7,6 +7,7 @@ import { BridgeApiError, BridgeService } from '#src/service/bridge/index.js';
 import type { FeeExternalAccount } from '#src/service/bridge/developer.js';
 import {
   CustomerStatus,
+  KycStatus,
   TicketStatus,
   TransactionState,
   WebhookEventStatus,
@@ -22,12 +23,12 @@ import type {
   FeeExternalAccountInfo,
 } from './admin.type.js';
 
-const PENDING_KYC = [
-  'incomplete',
-  'under_review',
-  'awaiting_ubo',
-  'awaiting_questionnaire',
-  'paused',
+const PENDING_KYC: string[] = [
+  KycStatus.incomplete,
+  KycStatus.under_review,
+  KycStatus.awaiting_ubo,
+  KycStatus.awaiting_questionnaire,
+  KycStatus.paused,
 ];
 const DAY_MS = 24 * 60 * 60_000;
 

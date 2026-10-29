@@ -8,7 +8,7 @@ export type BridgeChain = 'base' | 'solana';
 export type BridgeFiat = 'usd' | 'eur';
 export type BridgeStablecoin = 'usdc' | 'eurc';
 
-export type KycStatus =
+export type BridgeKycStatus =
   | 'not_started'
   | 'incomplete'
   | 'awaiting_questionnaire'
@@ -22,7 +22,7 @@ export type KycStatus =
   // Customer object uses `active` for approved
   | 'active';
 
-export type TosStatus = 'pending' | 'approved';
+export type BridgeTosStatus = 'pending' | 'approved';
 
 export interface BridgeRejectionReason {
   reason?: string;
@@ -37,8 +37,8 @@ export interface BridgeKycLink {
   type: 'individual' | 'business';
   kyc_link: string;
   tos_link: string;
-  kyc_status: KycStatus;
-  tos_status: TosStatus;
+  kyc_status: BridgeKycStatus;
+  tos_status: BridgeTosStatus;
   rejection_reasons?: BridgeRejectionReason[];
   customer_id?: string | null;
   created_at?: string;
@@ -57,9 +57,9 @@ export interface BridgeCustomer {
   business_name?: string;
   email?: string;
   type?: 'individual' | 'business';
-  status?: KycStatus;
-  kyc_status?: KycStatus;
-  tos_status?: TosStatus;
+  status?: BridgeKycStatus;
+  kyc_status?: BridgeKycStatus;
+  tos_status?: BridgeTosStatus;
   has_accepted_terms_of_service?: boolean;
   endorsements?: BridgeEndorsement[];
   rejection_reasons?: BridgeRejectionReason[];

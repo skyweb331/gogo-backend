@@ -16,7 +16,7 @@ input AddExternalWalletInput {
 
 type AppInfo {
   bridgeEnv: String!
-  defaultPayoutChain: String!
+  defaultPayoutChain: Chain!
   sandbox: Boolean!
   serverTime: DateTimeISO!
 }
@@ -97,7 +97,7 @@ type Customer implements Entity & TimeStamp {
 
   """Hosted Bridge KYC link (staff only)"""
   kycLink: String
-  kycStatus: String!
+  kycStatus: KycStatus!
   onboardedAt: DateTimeISO
   onboardingStep: OnboardingStep!
   payoutWallet: Wallet
@@ -106,7 +106,7 @@ type Customer implements Entity & TimeStamp {
   rejectionReasons: JSON
   status: CustomerStatus!
   suspendedAt: DateTimeISO
-  tosStatus: String!
+  tosStatus: TosStatus!
   type: CustomerType
   updatedAt: DateTimeISO
   user: User
@@ -342,6 +342,19 @@ The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](
 """
 scalar JSONObject
 
+enum KycStatus {
+  approved
+  awaiting_questionnaire
+  awaiting_ubo
+  deposits_restricted
+  incomplete
+  not_started
+  offboarded
+  paused
+  rejected
+  under_review
+}
+
 input LoginCodeInput {
   code: String!
   mfaToken: String!
@@ -446,7 +459,7 @@ type OnboardingStatus {
 
   """Bridge-hosted identity verification page"""
   kycLink: String
-  kycStatus: String!
+  kycStatus: KycStatus!
   rejectionReasons: [String!]!
 
   """Bridge sandbox: verification is simulated"""
@@ -456,7 +469,7 @@ type OnboardingStatus {
 
   """Bridge-hosted Terms of Service page"""
   tosLink: String
-  tosStatus: String!
+  tosStatus: TosStatus!
   type: CustomerType
 }
 
@@ -614,6 +627,11 @@ enum TicketStatus {
 interface TimeStamp {
   createdAt: DateTimeISO
   updatedAt: DateTimeISO
+}
+
+enum TosStatus {
+  approved
+  pending
 }
 
 input TotpInput {
@@ -801,8 +819,13 @@ type VirtualAccount implements Entity & TimeStamp {
   destinationCurrency: String!
   id: ID!
   sourceCurrency: FiatCurrency!
-  status: String!
+  status: VirtualAccountStatus!
   updatedAt: DateTimeISO
+}
+
+enum VirtualAccountStatus {
+  activated
+  deactivated
 }
 
 type VirtualAccountsResponse {

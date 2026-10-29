@@ -1,7 +1,7 @@
 import { ObjectType, Field, ID } from 'type-graphql';
 
 import { Entity } from '#src/graphql/interface.js';
-import { Chain, FiatCurrency } from '#src/graphql/enum.js';
+import { Chain, FiatCurrency, VirtualAccountStatus } from '#src/graphql/enum.js';
 
 /** Normalized view of Bridge `source_deposit_instructions` (ACH/wire for USD, SEPA for EUR). */
 @ObjectType()
@@ -61,8 +61,8 @@ export class VirtualAccount extends Entity {
 
   depositInstructions: unknown;
 
-  @Field(() => String)
-  status: string;
+  @Field(() => VirtualAccountStatus)
+  status: VirtualAccountStatus | string;
 
   @Field(() => Date, { nullable: true })
   deactivatedAt?: Date | null;

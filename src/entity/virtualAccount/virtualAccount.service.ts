@@ -9,7 +9,11 @@ import {
   type VirtualAccountRow,
 } from '#src/service/prisma.js';
 import { BridgeService, type BridgeVirtualAccount } from '#src/service/bridge/index.js';
-import { FiatCurrency } from '#src/graphql/enum.js';
+import {
+  FiatCurrency,
+  normalizeVirtualAccountStatus,
+  VirtualAccountStatus,
+} from '#src/graphql/enum.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { AppError, NotFoundError, isSqlError } from '#src/utils/errors.js';
 import type { Context } from '#src/context.js';
@@ -131,7 +135,7 @@ export class VirtualAccountService {
       destinationCurrency: STABLECOIN_FOR[currency],
       destinationChain: custodial.chain,
       depositInstructions: toJson(remote.source_deposit_instructions ?? {}),
-      status: remote.status ?? 'activated',
+      status: normalizeVirtualAccountStatus(remote.status),
     };
   }
 
@@ -142,9 +146,12 @@ export class VirtualAccountService {
       va.bridgeVirtualAccountId
     );
     return this.prisma.orm.VirtualAccount.where({ id: va.id }).update({
-      status: remote.status,
+      status: normalizeVirtualAccountStatus(remote.status),
       depositInstructions: toJson(remote.source_deposit_instructions ?? va.depositInstructions),
-      deactivatedAt: remote.status === 'deactivated' ? (va.deactivatedAt ?? new Date()) : null,
+      deactivatedAt:
+        remote.status === VirtualAccountStatus.deactivated
+          ? (va.deactivatedAt ?? new Date())
+          : null,
     });
   }
 
@@ -160,7 +167,7 @@ export class VirtualAccountService {
       va.bridgeVirtualAccountId
     );
     const updated = await this.prisma.orm.VirtualAccount.where({ id }).update({
-      status: remote.status ?? 'deactivated',
+      status: VirtualAccountStatus.deactivated,
       deactivatedAt: new Date(),
     });
     await this.audit.log(ctx, {

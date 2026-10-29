@@ -92,6 +92,52 @@ export enum OtpPurpose {
   WalletChange = 'WalletChange',
 }
 
+/**
+ * Bridge statuses stored as text columns. Writes go through the `normalize*` helpers
+ * so a value Bridge adds later can't break GraphQL serialization.
+ */
+
+export enum KycStatus {
+  not_started = 'not_started',
+  incomplete = 'incomplete',
+  awaiting_questionnaire = 'awaiting_questionnaire',
+  awaiting_ubo = 'awaiting_ubo',
+  under_review = 'under_review',
+  approved = 'approved',
+  rejected = 'rejected',
+  paused = 'paused',
+  offboarded = 'offboarded',
+  deposits_restricted = 'deposits_restricted',
+}
+
+export enum TosStatus {
+  pending = 'pending',
+  approved = 'approved',
+}
+
+export enum VirtualAccountStatus {
+  activated = 'activated',
+  deactivated = 'deactivated',
+}
+
+const isMember = <T extends string>(e: Record<string, T>, value: unknown): value is T =>
+  Object.values(e).includes(value as T);
+
+/** Bridge's customer object says `active` where KYC links say `approved`. Unknown values wait for review. */
+export const normalizeKycStatus = (status?: string | null): KycStatus => {
+  if (!status) return KycStatus.not_started;
+  if (status === 'active') return KycStatus.approved;
+  return isMember(KycStatus, status) ? status : KycStatus.under_review;
+};
+
+export const normalizeTosStatus = (status?: string | null): TosStatus =>
+  status === TosStatus.approved ? TosStatus.approved : TosStatus.pending;
+
+export const normalizeVirtualAccountStatus = (status?: string | null): VirtualAccountStatus =>
+  status === VirtualAccountStatus.deactivated
+    ? VirtualAccountStatus.deactivated
+    : VirtualAccountStatus.activated;
+
 /** GraphQL-only enums (not stored) */
 
 export enum WalletKeyStatus {
@@ -162,5 +208,8 @@ registerEnumType(FeeScheduleStatus, { name: 'FeeScheduleStatus' });
 registerEnumType(WebhookEventStatus, { name: 'WebhookEventStatus' });
 registerEnumType(TicketStatus, { name: 'TicketStatus' });
 registerEnumType(OtpPurpose, { name: 'OtpPurpose' });
+registerEnumType(KycStatus, { name: 'KycStatus' });
+registerEnumType(TosStatus, { name: 'TosStatus' });
+registerEnumType(VirtualAccountStatus, { name: 'VirtualAccountStatus' });
 registerEnumType(WalletKeyStatus, { name: 'WalletKeyStatus' });
 registerEnumType(OnboardingStep, { name: 'OnboardingStep' });
