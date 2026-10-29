@@ -256,12 +256,12 @@ export class PayoutService {
       }
 
       const attempts = tx.attempts + 1;
-      const { idempotencyKey, clientReferenceId } = await this.payoutIdentity(tx, attempts);
+      const idempotencyKey = attempts === 1 ? `payout-${tx.id}` : `payout-${tx.id}-r${attempts}`;
       const request = {
         amount: centsToDecimal(tx.creditedAmountInCents),
         developer_fee: centsToDecimal(tx.feeInCents),
         on_behalf_of: customer.bridgeCustomerId,
-        client_reference_id: clientReferenceId,
+        client_reference_id: `nxpay-tx-${tx.id}`,
         source: {
           payment_rail: 'bridge_wallet' as const,
           currency: stablecoin,
@@ -355,30 +355,6 @@ export class PayoutService {
 
   handleWebhook(event: BridgeWebhookEvent<BridgeTransfer>): Promise<WebhookOutcome> {
     return this.applyTransfer(event.event_object, TransactionEventSource.bridge_transfer);
-  }
-
-  /**
-   * Retries keep the idempotency key of the first attempt, which for a payout started
-   * before `legacyId` was removed is `payout-<old integer>`.
-   */
-  private async payoutIdentity(tx: TransactionRow, attempts: number) {
-    const previous = await this.prisma.orm.TransactionEvent.where({
-      transactionId: tx.id,
-      source: TransactionEventSource.system,
-      type: 'payout_created',
-    })
-      .orderBy((e) => e.createdAt.desc())
-      .select('payload')
-      .first();
-    const recorded =
-      previous?.payload && typeof previous.payload === 'object'
-        ? (previous.payload as { idempotencyKey?: unknown }).idempotencyKey
-        : undefined;
-    const base = typeof recorded === 'string' ? recorded.replace(/-r\d+$/, '') : `payout-${tx.id}`;
-    return {
-      idempotencyKey: attempts === 1 ? base : `${base}-r${attempts}`,
-      clientReferenceId: `nxpay-tx-${base.slice('payout-'.length)}`,
-    };
   }
 
   private async findForTransfer(transfer: BridgeTransfer) {

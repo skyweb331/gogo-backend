@@ -21,7 +21,6 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "npm run build && node --enable-source-maps dist/prisma/seed.js",
     "keys:rewrap": "npm run build && node --enable-source-maps dist/src/scripts/keys-rewrap.js",
-    "legacy:drop": "npm run build && node --enable-source-maps dist/src/scripts/drop-legacy-id.js",
     "keys:generate": "node -e \"console.log('v1:' + require('crypto').randomBytes(32).toString('base64'))\"",
     "prepare": "husky || true"
   },

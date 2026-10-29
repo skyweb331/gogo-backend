@@ -6,14 +6,11 @@ import {
   OnboardingService,
 } from '#src/entity/onboarding/onboarding.service.js';
 
-import { resolveJobId } from './legacyId.js';
-
-export const completeOnboarding = defineJob<{ customerId: string | number }>({
+export const completeOnboarding = defineJob<{ customerId: string }>({
   name: COMPLETE_ONBOARDING,
   queue: { policy: 'exclusive', retryLimit: 6, retryDelay: 30, retryBackoff: true },
-  handler: async (data) => {
-    const customerId = await resolveJobId('Customer', data.customerId);
-    if (customerId) await Container.get(OnboardingService).complete(customerId);
+  handler: async ({ customerId }) => {
+    await Container.get(OnboardingService).complete(customerId);
   },
 });
 

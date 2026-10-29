@@ -6,15 +6,12 @@ import {
   WebhookEventService,
 } from '#src/entity/webhookEvent/webhookEvent.service.js';
 
-import { resolveJobId } from './legacyId.js';
-
-export const processWebhookEvent = defineJob<{ id: string | number }>({
+export const processWebhookEvent = defineJob<{ id: string }>({
   name: PROCESS_WEBHOOK_EVENT,
   queue: { policy: 'exclusive' },
   work: { localConcurrency: 4 },
-  handler: async (data) => {
-    const id = await resolveJobId('WebhookEvent', data.id);
-    if (id) await Container.get(WebhookEventService).process(id);
+  handler: async ({ id }) => {
+    await Container.get(WebhookEventService).process(id);
   },
 });
 
