@@ -5,4 +5,5 @@ block content
   p Hi #{name},
   p Use this code to verify your email address:
   +code(code)
-  p The code expires in 30 minutes. If you didn't create a #{appName} account, you can ignore this email.
+  +codeExpiry(expiresIn)
+  p If you didn't create a #{appName} account, you can ignore this email.

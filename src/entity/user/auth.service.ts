@@ -21,7 +21,7 @@ import { AppError, UnauthenticatedError } from '#src/utils/errors.js';
 import { isUuid } from '#src/utils/id.js';
 
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
-import { OneTimeCodeService } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
+import { OneTimeCodeService, expiresIn } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
 import {
   CustomerService,
   assertSupportedGeography,
@@ -209,7 +209,7 @@ export class AuthService {
       to: user.email,
       subject: 'Verify your email',
       template: 'verify-email',
-      locals: { name: user.name, code },
+      locals: { name: user.name, code, expiresIn: expiresIn(OtpPurpose.EmailVerify) },
     });
   }
 
@@ -244,6 +244,7 @@ export class AuthService {
       locals: {
         name: user.name,
         link: `${base}/auth/reset-password?token=${encodeURIComponent(token)}`,
+        expiresIn: expiresIn(OtpPurpose.PasswordReset),
       },
     });
   }
@@ -311,6 +312,7 @@ export class AuthService {
         name: user.name,
         role: user.role,
         link: `${config.ADMIN_URL}/auth/reset-password?token=${encodeURIComponent(token)}`,
+        expiresIn: expiresIn(OtpPurpose.PasswordReset),
       },
     });
     await this.audit.log(ctx, {

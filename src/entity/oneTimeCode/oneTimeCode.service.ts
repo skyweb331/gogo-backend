@@ -16,6 +16,13 @@ const TTL_MINUTES: Record<OtpPurpose, number> = {
   [OtpPurpose.WalletChange]: 10,
 };
 
+/** How long a code or link stays valid, worded for emails ("30 minutes", "1 hour"). */
+export const expiresIn = (purpose: OtpPurpose) => {
+  const minutes = TTL_MINUTES[purpose];
+  if (minutes % 60) return `${minutes} minutes`;
+  return minutes === 60 ? '1 hour' : `${minutes / 60} hours`;
+};
+
 const safeEqual = (a: string, b: string) => {
   const ab = Buffer.from(a);
   const bb = Buffer.from(b);

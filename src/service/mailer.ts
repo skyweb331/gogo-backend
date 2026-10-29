@@ -9,6 +9,11 @@ import { config, isProduction } from '#src/config.js';
 
 const TEMPLATE_DIR = fileURLToPath(new URL('../templates/email/', import.meta.url));
 
+/** Gmail and Outlook do not render SVG, so the logo is a PNG attached inline. */
+const LOGO_CID = 'nxpay-logo';
+let logoPng: Promise<Buffer> | undefined;
+const loadLogo = () => (logoPng ??= fs.readFile(path.join(TEMPLATE_DIR, 'assets/logo.png')));
+
 export type EmailTemplate =
   | 'verify-email'
   | 'password-reset'
@@ -71,6 +76,7 @@ export class MailerService {
       appName: 'NxPay',
       frontendUrl: config.FRONTEND_URL,
       adminUrl: config.ADMIN_URL,
+      logoCid: LOGO_CID,
       year: new Date().getUTCFullYear(),
       ...locals,
     });
@@ -79,12 +85,16 @@ export class MailerService {
   async send({ to, subject, template, locals = {} }: SendEmailOptions): Promise<void> {
     const html = this.render(template, { subject, ...locals });
     const text = htmlToText(html);
+    const logo = await loadLogo();
 
     if (config.MAIL_TRANSPORT === 'log') {
       const dir = path.resolve(process.cwd(), 'tmp/mail');
       await fs.mkdir(dir, { recursive: true });
       const file = path.join(dir, `${Date.now()}-${template}.html`);
-      await fs.writeFile(file, html);
+      await fs.writeFile(
+        file,
+        html.replaceAll(`cid:${LOGO_CID}`, `data:image/png;base64,${logo.toString('base64')}`)
+      );
       console.log(
         `[mail] to=${to} subject="${subject}" template=${template} file=${path.relative(process.cwd(), file)}\n${text}\n`
       );
@@ -112,6 +122,15 @@ export class MailerService {
               Html: { Data: html, Charset: 'UTF-8' },
               Text: { Data: text, Charset: 'UTF-8' },
             },
+            Attachments: [
+              {
+                RawContent: logo,
+                FileName: 'nxpay-logo.png',
+                ContentType: 'image/png',
+                ContentDisposition: 'INLINE',
+                ContentId: LOGO_CID,
+              },
+            ],
           },
         },
       })

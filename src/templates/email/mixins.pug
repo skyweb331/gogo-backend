@@ -1,11 +1,17 @@
 mixin button(href, label)
   table(role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;")
     tr
-      td(style="border-radius:8px;background:#3d5afe;")
-        a(href=href style="display:inline-block;padding:12px 24px;color:#ffffff;font-weight:600;text-decoration:none;border-radius:8px;")= label
+      td(style="border-radius:8px;background:#95288a;")
+        a(href=href style="display:inline-block;padding:12px 28px;color:#ffffff;font-weight:600;text-decoration:none;border-radius:8px;")= label
 
 mixin code(value)
-  div(style="margin:24px 0;padding:16px;background:#f4f5f7;border-radius:8px;text-align:center;font-size:28px;font-weight:700;letter-spacing:8px;font-family:Menlo,Consolas,monospace;")= value
+  div(style="margin:24px 0 8px;padding:20px 16px;background:#fbf4fa;border:1px solid #f0dcee;border-radius:12px;text-align:center;font-size:32px;font-weight:700;letter-spacing:10px;color:#1f2430;font-family:Menlo,Consolas,monospace;")= value
+
+mixin codeExpiry(expiresIn)
+  p(style="margin:0 0 24px;font-size:13px;color:#7a8194;text-align:center;")
+    | This code expires in 
+    strong(style="color:#1f2430;")= expiresIn
+    | .
 
 mixin rows(items)
   table(role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;border-collapse:collapse;")

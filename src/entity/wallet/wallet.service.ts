@@ -13,7 +13,7 @@ import { RateLimiterService } from '#src/service/rateLimiter.js';
 import { Chain, OtpPurpose, WalletKeyStatus, WalletStatus, WalletType } from '#src/graphql/enum.js';
 import { AuditLogService } from '#src/entity/auditLog/auditLog.service.js';
 import { AuthService } from '#src/entity/user/auth.service.js';
-import { OneTimeCodeService } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
+import { OneTimeCodeService, expiresIn } from '#src/entity/oneTimeCode/oneTimeCode.service.js';
 import {
   AppError,
   ForbiddenError,
@@ -128,7 +128,12 @@ export class WalletService {
       to: user.email,
       subject: 'Your NxPay confirmation code',
       template: 'otp',
-      locals: { name: user.name, code, action: 'change your payout wallets' },
+      locals: {
+        name: user.name,
+        code,
+        action: 'change your payout wallets',
+        expiresIn: expiresIn(OtpPurpose.WalletChange),
+      },
     });
   }
 
@@ -287,6 +292,7 @@ export class WalletService {
         name: user.name,
         code,
         action: `export the private key of ${shortAddress(wallet.address)}`,
+        expiresIn: expiresIn(OtpPurpose.WalletKeyExport),
       },
     });
   }
