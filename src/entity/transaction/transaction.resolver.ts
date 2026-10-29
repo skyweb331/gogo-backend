@@ -61,8 +61,11 @@ export class TransactionResolver {
 
   @Authorized()
   @Query(() => Transaction, { nullable: true })
-  async transaction(@Arg('id', () => ID) id: string, @Ctx() ctx: Context) {
-    const tx = await this.service.getById(id);
+  async transaction(
+    @Arg('id', () => ID, { description: 'UUID or reference (NXP-…)' }) id: string,
+    @Ctx() ctx: Context
+  ) {
+    const tx = await this.service.getByIdOrReference(id);
     assertOwnership(ctx, tx);
     return tx;
   }

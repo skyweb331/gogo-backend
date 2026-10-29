@@ -4,6 +4,7 @@ import { and } from '@prisma/orm-postgres/orm-client';
 import { PrismaService, toJson, type TransactionRow } from '#src/service/prisma.js';
 import { TransactionEventSource, TransactionState } from '#src/graphql/enum.js';
 import { canTransition } from '#src/state/transaction.stateMachine.js';
+import { isUuid } from '#src/utils/id.js';
 
 import type { TransactionQueryArgs } from './transaction.type.js';
 
@@ -59,6 +60,13 @@ export class TransactionService {
 
   async getById(id: string) {
     return this.prisma.orm.Transaction.where({ id }).first();
+  }
+
+  /** Customer URLs use the reference; older email links still carry the UUID. */
+  async getByIdOrReference(value: string) {
+    const reference = value.trim().toUpperCase();
+    if (isUuid(value)) return this.getById(value);
+    return this.prisma.orm.Transaction.where({ reference }).first();
   }
 
   async getByDepositId(bridgeDepositId: string) {

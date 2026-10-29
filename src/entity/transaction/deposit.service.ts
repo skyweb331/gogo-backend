@@ -247,7 +247,7 @@ export class DepositService {
       locals: {
         name: user.name,
         currencyLabel: tx.currency === FiatCurrency.eur ? 'EUR' : 'USD',
-        transactionId: tx.id,
+        reference: tx.reference,
         rows: [
           ['Amount', formatMoney(tx.grossAmountInCents, tx.currency)],
           ['Method', RAIL_LABEL[tx.rail ?? ''] ?? tx.rail ?? 'Bank transfer'],

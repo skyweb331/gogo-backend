@@ -562,7 +562,7 @@ export class PayoutService {
       template: 'payout-completed',
       locals: {
         name: user.name,
-        transactionId: tx.id,
+        reference: tx.reference,
         explorerUrl: explorerTxUrl(wallet?.chain, tx.txHash),
         rows: [
           ['Deposit', formatMoney(tx.grossAmountInCents, tx.currency)],
@@ -590,7 +590,7 @@ export class PayoutService {
       template: 'payout-failed',
       locals: {
         name: user.name,
-        transactionId: tx.id,
+        reference: tx.reference,
         rows: [
           ['Deposit', formatMoney(tx.grossAmountInCents, tx.currency)],
           ['Status', 'Payout delayed, our team is on it'],
